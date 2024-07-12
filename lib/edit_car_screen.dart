@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart'; // Add this import for date formatting
 
 class EditCarScreen extends StatefulWidget {
   final String carId;
@@ -13,42 +12,46 @@ class EditCarScreen extends StatefulWidget {
 
 class _EditCarScreenState extends State<EditCarScreen> {
   final _formKey = GlobalKey<FormState>();
-
-  final TextEditingController _manufactureController = TextEditingController();
-  final TextEditingController _modelController = TextEditingController();
-  final TextEditingController _yearController = TextEditingController();
-  final TextEditingController _engineController = TextEditingController();
-  final TextEditingController _transmissionController = TextEditingController();
-  final TextEditingController _platesController = TextEditingController();
-  final TextEditingController _nextInsuranceDateController = TextEditingController();
-  final TextEditingController _nextInspectionDateController = TextEditingController();
-  final TextEditingController _nextTaxDateController = TextEditingController();
-  final TextEditingController _nextRevisionDateController = TextEditingController();
-  final TextEditingController _serviceHistoryController = TextEditingController();
+  late TextEditingController _manufactureController;
+  late TextEditingController _modelController;
+  late TextEditingController _yearController;
+  late TextEditingController _engineController;
+  late TextEditingController _transmissionController;
+  late TextEditingController _platesController;
+  late TextEditingController _nextInsuranceDateController;
+  late TextEditingController _nextInspectionDateController;
+  late TextEditingController _nextTaxDateController;
+  late TextEditingController _nextRevisionDateController;
 
   @override
   void initState() {
     super.initState();
+    _manufactureController = TextEditingController();
+    _modelController = TextEditingController();
+    _yearController = TextEditingController();
+    _engineController = TextEditingController();
+    _transmissionController = TextEditingController();
+    _platesController = TextEditingController();
+    _nextInsuranceDateController = TextEditingController();
+    _nextInspectionDateController = TextEditingController();
+    _nextTaxDateController = TextEditingController();
+    _nextRevisionDateController = TextEditingController();
     _loadCarData();
   }
 
-  Future<void> _loadCarData() async {
-    DocumentSnapshot carDoc = await FirebaseFirestore.instance.collection('cars').doc(widget.carId).get();
-    Map<String, dynamic> carData = carDoc.data() as Map<String, dynamic>;
-
-    setState(() {
-      _manufactureController.text = carData['manufacture'];
-      _modelController.text = carData['model'];
-      _yearController.text = carData['year'];
-      _engineController.text = carData['engine'];
-      _transmissionController.text = carData['transmission'];
-      _platesController.text = carData['plates'];
-      _nextInsuranceDateController.text = carData['nextInsuranceDate'];
-      _nextInspectionDateController.text = carData['nextInspectionDate'];
-      _nextTaxDateController.text = carData['nextTaxDate'];
-      _nextRevisionDateController.text = carData['nextRevisionDate'];
-      _serviceHistoryController.text = carData['serviceHistory'];
-    });
+  void _loadCarData() async {
+    DocumentSnapshot car = await FirebaseFirestore.instance.collection('cars').doc(widget.carId).get();
+    var data = car.data() as Map<String, dynamic>;
+    _manufactureController.text = data['manufacture'];
+    _modelController.text = data['model'];
+    _yearController.text = data['year'].toString();
+    _engineController.text = data['engine'];
+    _transmissionController.text = data['transmission'];
+    _platesController.text = data['plates'];
+    _nextInsuranceDateController.text = data['nextInsuranceDate'];
+    _nextInspectionDateController.text = data['nextInspectionDate'];
+    _nextTaxDateController.text = data['nextTaxDate'];
+    _nextRevisionDateController.text = data['nextRevisionDate'];
   }
 
   Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
@@ -61,8 +64,27 @@ class _EditCarScreenState extends State<EditCarScreen> {
 
     if (pickedDate != null) {
       setState(() {
-        controller.text = DateFormat('yyyy-MM-dd').format(pickedDate);
+        controller.text = pickedDate.toLocal().toString().split(' ')[0];
       });
+    }
+  }
+
+  Future<void> _saveCar() async {
+    if (_formKey.currentState!.validate()) {
+      Map<String, dynamic> carData = {
+        'manufacture': _manufactureController.text,
+        'model': _modelController.text,
+        'year': int.parse(_yearController.text),
+        'engine': _engineController.text,
+        'transmission': _transmissionController.text,
+        'plates': _platesController.text,
+        'nextInsuranceDate': _nextInsuranceDateController.text,
+        'nextInspectionDate': _nextInspectionDateController.text,
+        'nextTaxDate': _nextTaxDateController.text,
+        'nextRevisionDate': _nextRevisionDateController.text,
+      };
+      await FirebaseFirestore.instance.collection('cars').doc(widget.carId).update(carData);
+      Navigator.pop(context);
     }
   }
 
@@ -73,7 +95,7 @@ class _EditCarScreenState extends State<EditCarScreen> {
         title: Text('Edit Car'),
       ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
           child: ListView(
@@ -81,95 +103,105 @@ class _EditCarScreenState extends State<EditCarScreen> {
               TextFormField(
                 controller: _manufactureController,
                 decoration: InputDecoration(labelText: 'Manufacture'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter the manufacture';
+                  }
+                  return null;
+                },
               ),
               TextFormField(
                 controller: _modelController,
                 decoration: InputDecoration(labelText: 'Model'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter the model';
+                  }
+                  return null;
+                },
               ),
               TextFormField(
                 controller: _yearController,
                 decoration: InputDecoration(labelText: 'Year'),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter the year';
+                  }
+                  return null;
+                },
               ),
               TextFormField(
                 controller: _engineController,
                 decoration: InputDecoration(labelText: 'Engine'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter the engine';
+                  }
+                  return null;
+                },
               ),
               TextFormField(
                 controller: _transmissionController,
                 decoration: InputDecoration(labelText: 'Transmission'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter the transmission';
+                  }
+                  return null;
+                },
               ),
               TextFormField(
                 controller: _platesController,
                 decoration: InputDecoration(labelText: 'Plates'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter the plates';
+                  }
+                  return null;
+                },
               ),
               TextFormField(
                 controller: _nextInsuranceDateController,
                 decoration: InputDecoration(labelText: 'Next Insurance Date'),
-                onTap: () async {
+                onTap: () {
                   FocusScope.of(context).requestFocus(new FocusNode());
-                  await _selectDate(context, _nextInsuranceDateController);
+                  _selectDate(context, _nextInsuranceDateController);
                 },
               ),
               TextFormField(
                 controller: _nextInspectionDateController,
                 decoration: InputDecoration(labelText: 'Next Inspection Date'),
-                onTap: () async {
+                onTap: () {
                   FocusScope.of(context).requestFocus(new FocusNode());
-                  await _selectDate(context, _nextInspectionDateController);
+                  _selectDate(context, _nextInspectionDateController);
                 },
               ),
               TextFormField(
                 controller: _nextTaxDateController,
                 decoration: InputDecoration(labelText: 'Next Tax Date'),
-                onTap: () async {
+                onTap: () {
                   FocusScope.of(context).requestFocus(new FocusNode());
-                  await _selectDate(context, _nextTaxDateController);
+                  _selectDate(context, _nextTaxDateController);
                 },
               ),
               TextFormField(
                 controller: _nextRevisionDateController,
                 decoration: InputDecoration(labelText: 'Next Revision Date'),
-                onTap: () async {
+                onTap: () {
                   FocusScope.of(context).requestFocus(new FocusNode());
-                  await _selectDate(context, _nextRevisionDateController);
+                  _selectDate(context, _nextRevisionDateController);
                 },
-              ),
-              TextFormField(
-                controller: _serviceHistoryController,
-                decoration: InputDecoration(labelText: 'Service History'),
-                maxLines: 5,
               ),
               SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    _updateCar();
-                  }
-                },
-                child: Text('Update Car'),
+                onPressed: _saveCar,
+                child: Text('Save Car'),
               ),
             ],
           ),
         ),
       ),
     );
-  }
-
-  Future<void> _updateCar() async {
-    await FirebaseFirestore.instance.collection('cars').doc(widget.carId).update({
-      'manufacture': _manufactureController.text,
-      'model': _modelController.text,
-      'year': _yearController.text,
-      'engine': _engineController.text,
-      'transmission': _transmissionController.text,
-      'plates': _platesController.text,
-      'nextInsuranceDate': _nextInsuranceDateController.text,
-      'nextInspectionDate': _nextInspectionDateController.text,
-      'nextTaxDate': _nextTaxDateController.text,
-      'nextRevisionDate': _nextRevisionDateController.text,
-      'serviceHistory': _serviceHistoryController.text,
-    });
-
-    Navigator.pop(context);
   }
 }

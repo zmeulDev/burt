@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/firestore_service.dart';
+import 'car_details_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -37,53 +38,71 @@ class _HomeScreenState extends State<HomeScreen> {
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 16),
-            if (upcomingEvents!['Insurance']!.isNotEmpty)
-              Card(
-                margin: EdgeInsets.symmetric(vertical: 8.0),
-                child: ListTile(
-                  title: Text('Insurance - ${upcomingEvents!['Insurance']!['car']}'),
-                  subtitle: Text(
-                    'Date: ${upcomingEvents!['Insurance']!['date'].toLocal().toString().split(' ')[0]}',
-                  ),
-                  leading: Icon(Icons.event, color: Colors.green),
-                ),
+            Expanded(
+              child: GridView.count(
+                crossAxisCount: 2,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+                children: _buildUpcomingEventCards(context),
               ),
-            if (upcomingEvents!['Inspection']!.isNotEmpty)
-              Card(
-                margin: EdgeInsets.symmetric(vertical: 8.0),
-                child: ListTile(
-                  title: Text('Inspection - ${upcomingEvents!['Inspection']!['car']}'),
-                  subtitle: Text(
-                    'Date: ${upcomingEvents!['Inspection']!['date'].toLocal().toString().split(' ')[0]}',
-                  ),
-                  leading: Icon(Icons.event, color: Colors.green),
-                ),
-              ),
-            if (upcomingEvents!['Tax']!.isNotEmpty)
-              Card(
-                margin: EdgeInsets.symmetric(vertical: 8.0),
-                child: ListTile(
-                  title: Text('Tax - ${upcomingEvents!['Tax']!['car']}'),
-                  subtitle: Text(
-                    'Date: ${upcomingEvents!['Tax']!['date'].toLocal().toString().split(' ')[0]}',
-                  ),
-                  leading: Icon(Icons.event, color: Colors.green),
-                ),
-              ),
-            if (upcomingEvents!['Revision']!.isNotEmpty)
-              Card(
-                margin: EdgeInsets.symmetric(vertical: 8.0),
-                child: ListTile(
-                  title: Text('Revision - ${upcomingEvents!['Revision']!['car']}'),
-                  subtitle: Text(
-                    'Date: ${upcomingEvents!['Revision']!['date'].toLocal().toString().split(' ')[0]}',
-                  ),
-                  leading: Icon(Icons.event, color: Colors.green),
-                ),
-              ),
+            ),
           ],
         ),
       ),
     );
+  }
+
+  List<Widget> _buildUpcomingEventCards(BuildContext context) {
+    List<Widget> eventCards = [];
+    DateTime now = DateTime.now();
+
+    upcomingEvents!.forEach((type, event) {
+      if (event.isNotEmpty) {
+        DateTime eventDate = event['date'];
+        bool isUrgent = eventDate.isBefore(now.add(Duration(days: 7)));
+
+        eventCards.add(
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CarDetailsScreen(carId: event['carId']),
+                ),
+              );
+            },
+            child: Card(
+              color: isUrgent ? Colors.red[100] : Colors.white,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '$type - ${event['car']}',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: isUrgent ? Colors.red : Colors.black,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Date: ${eventDate.toLocal().toString().split(' ')[0]}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: isUrgent ? Colors.red : Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+    });
+
+    return eventCards;
   }
 }

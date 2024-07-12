@@ -17,7 +17,6 @@ class ServiceListScreen extends StatelessWidget {
         stream: FirebaseFirestore.instance
             .collection('services')
             .where('carId', isEqualTo: carId)
-            .orderBy('date', descending: true) // Sort by date in descending order
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -40,11 +39,6 @@ class ServiceListScreen extends StatelessWidget {
                     style: TextStyle(fontSize: 24, color: Colors.grey),
                   ),
                   SizedBox(height: 10),
-                  Text(
-                    'Add a new service using the button below.',
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
-                  ),
-                  SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
                       Navigator.push(
@@ -67,15 +61,7 @@ class ServiceListScreen extends StatelessWidget {
               var serviceData = snapshot.data!.docs[index];
               return ListTile(
                 title: Text(serviceData['serviceName']),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Date: ${serviceData['date']}'),
-                    Text('Cost: ${serviceData['cost']}'),
-                    if (serviceData['note'] != null && serviceData['note'].isNotEmpty)
-                      Text('Note: ${serviceData['note']}'),
-                  ],
-                ),
+                subtitle: Text('Date: ${serviceData['date']}'),
                 onTap: () {
                   Navigator.push(
                     context,
@@ -83,35 +69,14 @@ class ServiceListScreen extends StatelessWidget {
                       builder: (context) => AddEditServiceScreen(
                         carId: carId,
                         serviceId: serviceData.id,
-
                       ),
                     ),
                   );
                 },
-                trailing: IconButton(
-                  icon: Icon(Icons.delete),
-                  onPressed: () async {
-                    await FirebaseFirestore.instance
-                        .collection('services')
-                        .doc(serviceData.id)
-                        .delete();
-                  },
-                ),
               );
             },
           );
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => AddEditServiceScreen(carId: carId),
-            ),
-          );
-        },
-        child: Icon(Icons.add),
       ),
     );
   }

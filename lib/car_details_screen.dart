@@ -1,8 +1,7 @@
-import 'package:burt/screens/add_edit_service_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'edit_car_screen.dart';
-import 'screens/service_list_screen.dart'; // Import the screen to add service
+import 'screens/service_list_screen.dart';
 
 class CarDetailsScreen extends StatelessWidget {
   final String carId;
@@ -14,6 +13,29 @@ class CarDetailsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Car Details'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.edit),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EditCarScreen(carId: carId),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: () async {
+              bool confirmed = await _showConfirmationDialog(context, 'Are you sure you want to delete this car?') ?? false;
+              if (confirmed) {
+                await FirebaseFirestore.instance.collection('cars').doc(carId).delete();
+                Navigator.pop(context);
+              }
+            },
+          ),
+        ],
       ),
       body: StreamBuilder<DocumentSnapshot>(
         stream: FirebaseFirestore.instance.collection('cars').doc(carId).snapshots(),
@@ -58,45 +80,33 @@ class CarDetailsScreen extends StatelessWidget {
                   },
                   child: Text('View Service History'),
                 ),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => EditCarScreen(carId: carId),
-                      ),
-                    );
-                  },
-                  child: Text('Edit'),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    await FirebaseFirestore.instance.collection('cars').doc(carId).delete();
-                    Navigator.pop(context); // Go back to the previous screen after deletion
-                  },
-                  child: Text('Delete'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                  ),
-                ),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AddEditServiceScreen(carId: carId),
-                      ),
-                    );
-                  },
-                  child: Text('Add Service'),
-                ),
               ],
             ),
           );
         },
       ),
     );
+  }
+
+  Future<bool> _showConfirmationDialog(BuildContext context, String message) async {
+    return (await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Confirmation'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text('Confirm'),
+            ),
+          ],
+        );
+      },
+    )) ?? false;
   }
 }
