@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "929787487512",
+    "project_id": "burt-carmgr",
+    "storage_bucket": "burt-carmgr.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:929787487512:android:fedaba61716eb19996ea6d",
+        "android_client_info": {
+          "package_name": "com.zml.burt"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "929787487512-vgktrtt4vo57b6cu1l8odleovk9qtb4m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.zml.burt",
+            "certificate_hash": "555be52b801fa4b20ba069c8a3dbd1f63939a147"
+          }
+        },
+        {
+          "client_id": "929787487512-ohpics9gefl237ff2hts9gfj0csphd2g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCl0BdqjJHRQQ3a8B8X6kehHqHKeS_ldGY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "929787487512-ohpics9gefl237ff2hts9gfj0csphd2g.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
