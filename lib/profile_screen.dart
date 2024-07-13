@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+  final Function toggleThemeMode;
+
+  const ProfileScreen({Key? key, required this.toggleThemeMode}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -9,10 +11,19 @@ class ProfileScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Profile'),
       ),
-      body: const Center(
-        child: Text(
-          'Profile Screen',
-          style: TextStyle(fontSize: 24),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text('Profile Screen'),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                toggleThemeMode();
+              },
+              child: const Text('Toggle Theme'),
+            ),
+          ],
         ),
       ),
     );

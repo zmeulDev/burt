@@ -4,14 +4,11 @@ import 'package:intl/intl.dart';
 import 'package:line_icons/line_icons.dart';
 import 'styles.dart';
 import 'service_dashboard.dart';
-import 'service_form.dart';
 
-class ServiceScreen extends StatelessWidget {
-  final String carId;
+class AllServicesScreen extends StatelessWidget {
+  const AllServicesScreen({Key? key}) : super(key: key);
 
-  const ServiceScreen({Key? key, required this.carId}) : super(key: key);
-
-  Future<void> _deleteService(BuildContext context, String serviceId) async {
+  Future<void> _deleteService(BuildContext context, String carId, String serviceId) async {
     await FirebaseFirestore.instance
         .collection('cars')
         .doc(carId)
@@ -29,28 +26,11 @@ class ServiceScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Service History'),
+        title: const Text('All Service History'),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(LineIcons.plus),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ServiceForm(carId: carId),
-                ),
-              );
-            },
-          ),
-        ],
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('cars')
-            .doc(carId)
-            .collection('services')
-            .snapshots(),
+        stream: FirebaseFirestore.instance.collectionGroup('services').snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -75,6 +55,7 @@ class ServiceScreen extends StatelessWidget {
                   itemBuilder: (context, index) {
                     var service = services[index];
                     var serviceData = service.data() as Map<String, dynamic>;
+                    String carId = service.reference.parent.parent!.id;
                     return Card(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.0),
@@ -113,18 +94,13 @@ class ServiceScreen extends StatelessWidget {
                                 IconButton(
                                   icon: const Icon(LineIcons.edit),
                                   onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => ServiceForm(carId: carId, service: service),
-                                      ),
-                                    );
+                                    // Navigate to a screen to edit the service record.
                                   },
                                 ),
                                 IconButton(
                                   icon: const Icon(LineIcons.trash),
                                   onPressed: () {
-                                    _deleteService(context, service.id);
+                                    _deleteService(context, carId, service.id);
                                   },
                                 ),
                               ],
