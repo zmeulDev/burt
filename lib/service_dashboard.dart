@@ -1,77 +1,120 @@
 import 'package:flutter/material.dart';
-import 'package:line_icons/line_icons.dart';
-import 'service_utils.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'styles.dart';
 
 class ServiceDashboard extends StatelessWidget {
   const ServiceDashboard({Key? key}) : super(key: key);
 
+  Future<Map<String, dynamic>> _fetchDashboardData() async {
+    QuerySnapshot carsSnapshot = await FirebaseFirestore.instance.collection('cars').get();
+    List<QueryDocumentSnapshot> allServices = [];
+    int totalCars = carsSnapshot.docs.length;
+
+    for (var car in carsSnapshot.docs) {
+      QuerySnapshot servicesSnapshot = await car.reference.collection('services').get();
+      allServices.addAll(servicesSnapshot.docs);
+    }
+
+    double totalCost = allServices.fold(0.0, (sum, service) {
+      var cost = service.get('cost');
+      return sum + (cost ?? 0.0);
+    });
+
+    return {
+      'totalCars': totalCars,
+      'totalServices': allServices.length,
+      'totalCost': totalCost,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<Map<String, dynamic>>(
-      future: Future.wait([calculateTotalServiceEntries(), calculateTotalServiceCost()]).then((values) {
-        return {'entries': values[0], 'cost': values[1]};
-      }),
+      future: _fetchDashboardData(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return _buildLoadingPlaceholder();
         }
-        if (snapshot.hasError) {
-          return const Center(child: Text('Error calculating totals'));
+        if (!snapshot.hasData || snapshot.data == null) {
+          return _buildNoDataPlaceholder();
         }
-        int totalServiceEntries = snapshot.data?['entries'] ?? 0;
-        double totalServiceCost = snapshot.data?['cost'] ?? 0.0;
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildDashboardCard(
-              context,
-              'Total Service Entries',
-              totalServiceEntries.toString(),
-              LineIcons.wrench,
-              Colors.green,
-            ),
-            _buildDashboardCard(
-              context,
-              'Total Service Cost',
-              '\$${totalServiceCost.toStringAsFixed(2)}',
-              LineIcons.dollarSign,
-              Colors.orange,
-            ),
-          ],
-        );
+        int totalCars = snapshot.data!['totalCars'];
+        int totalServices = snapshot.data!['totalServices'];
+        double totalCost = snapshot.data!['totalCost'];
+
+        return _buildServiceDashboard(context, totalCars, totalServices, totalCost);
       },
     );
   }
 
-  Widget _buildDashboardCard(
-      BuildContext context, String title, String value, IconData icon, Color color) {
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-      ),
-      elevation: 3,
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            Icon(icon, size: 40, color: color),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: subheadingTextStyle),
-                  const SizedBox(height: 8),
-                  Text(value, style: headingTextStyle),
-                ],
-              ),
-            ),
-          ],
+  Widget _buildLoadingPlaceholder() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _buildDashboardCard('Loading...', 'Cars', isLoading: true),
+        _buildDashboardCard('Loading...', 'Services', isLoading: true),
+        _buildDashboardCard('Loading...', 'Service Cost', isLoading: true),
+      ],
+    );
+  }
+
+  Widget _buildNoDataPlaceholder() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _buildDashboardCard('0', 'Cars'),
+        _buildDashboardCard('0', 'Services'),
+        _buildDashboardCard('\$0.00', 'Service Cost'),
+      ],
+    );
+  }
+
+  Widget _buildServiceDashboard(BuildContext context, int totalCars, int totalServices, double totalCost) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _buildDashboardCard(totalCars.toString(), 'Cars'),
+        _buildSeparator(),
+        _buildDashboardCard(totalServices.toString(), 'Services'),
+        _buildSeparator(),
+        _buildDashboardCard('\$${totalCost.toStringAsFixed(2)}', 'Service Cost'),
+      ],
+    );
+  }
+
+  Widget _buildSeparator() {
+    return Container(
+      height: 30,
+      width: 1,
+      color: Colors.grey,
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+    );
+  }
+
+  Widget _buildDashboardCard(String number, String label, {bool isLoading = false}) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        isLoading
+            ? CircularProgressIndicator()
+            : Text(
+          number,
+          style: const TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
-      ),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 16,
+            color: Colors.white,
+          ),
+        ),
+      ],
     );
   }
 }

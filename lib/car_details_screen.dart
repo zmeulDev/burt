@@ -42,10 +42,10 @@ class CarDetailsScreen extends StatelessWidget {
           children: [
             Icon(icon, size: 28, color: Colors.blueGrey),
             const SizedBox(height: 8),
-            Text(label, style: subheadingTextStyle, textAlign: TextAlign.center),
+            Text(label, style: titleMediumTextStyle, textAlign: TextAlign.center),
             const SizedBox(height: 4),
             Flexible(
-              child: Text(value, style: headingTextStyle, textAlign: TextAlign.center),
+              child: Text(value, style: titleLargeTextStyle, textAlign: TextAlign.center),
             ),
           ],
         ),
@@ -153,11 +153,11 @@ class CarDetailsScreen extends StatelessWidget {
                           children: [
                             Icon(LineIcons.clipboard, size: 28, color: Colors.blueGrey),
                             const SizedBox(width: 16),
-                            Text("Notes", style: subheadingTextStyle),
+                            Text("Notes", style: titleMediumTextStyle),
                           ],
                         ),
                         const SizedBox(height: 8),
-                        Text(car['notes'], style: bodyTextStyle),
+                        Text(car['notes'], style: bodyMediumTextStyle),
                       ],
                     ),
                   ),
@@ -178,7 +178,7 @@ class CarDetailsScreen extends StatelessWidget {
                       ),
                     );
                   },
-                  child: Text('View Service History', style: buttonTextStyle),
+                  child: Text('View Service History', style: titleMediumTextStyle),
                 ),
               ],
             ),

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'cars_screen.dart';
+import 'service_screen.dart';
 import 'profile_screen.dart';
-import 'all_services_screen.dart';
+import 'styles.dart';
 
 class MainScreen extends StatefulWidget {
-  final Function toggleThemeMode;
+  final VoidCallback toggleThemeMode;
 
   const MainScreen({Key? key, required this.toggleThemeMode}) : super(key: key);
 
@@ -15,12 +16,12 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
+  String selectedCarId = 'defaultCarId'; // Placeholder for car ID
 
-  List<Widget> _widgetOptions() => [
-    const HomeScreen(),
-    const CarsScreen(),
-    const AllServicesScreen(),
-    ProfileScreen(toggleThemeMode: widget.toggleThemeMode),
+  static const List<Widget> _widgetOptions = <Widget>[
+    HomeScreen(),
+    CarsScreen(),
+    ServiceScreen(carId: 'defaultCarId'),
   ];
 
   void _onItemTapped(int index) {
@@ -32,13 +33,13 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Burt'),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Theme.of(context).colorScheme.onPrimary,
-        elevation: 0,
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: [
+          ..._widgetOptions,
+          ProfileScreen(toggleThemeMode: widget.toggleThemeMode),
+        ],
       ),
-      body: _widgetOptions().elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -59,11 +60,8 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Theme.of(context).colorScheme.primary,
-        unselectedItemColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        selectedItemColor: primaryColor,
         onTap: _onItemTapped,
-        type: BottomNavigationBarType.fixed,
       ),
     );
   }

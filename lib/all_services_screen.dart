@@ -67,25 +67,25 @@ class AllServicesScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(serviceData['serviceName'] ?? 'Unknown Service', style: headingTextStyle),
+                            Text(serviceData['serviceName'] ?? 'Unknown Service', style: titleMediumTextStyle),
                             const SizedBox(height: 8),
                             Text(
                               'Date: ${serviceData['serviceDate'] != null ? DateFormat('yyyy-MM-dd').format(serviceData['serviceDate'].toDate()) : 'N/A'}',
-                              style: bodyTextStyle,
+                              style: bodyMediumTextStyle,
                             ),
                             Text(
                               'Cost: \$${serviceData['cost']?.toStringAsFixed(2) ?? '0.00'}',
-                              style: bodyTextStyle,
+                              style: bodyMediumTextStyle,
                             ),
                             if (serviceData.containsKey('warranty') && serviceData['warranty'] != null)
                               Text(
                                 'Warranty: ${serviceData['warranty']}',
-                                style: bodyTextStyle,
+                                style: bodyMediumTextStyle,
                               ),
                             if (serviceData.containsKey('notes') && serviceData['notes'] != null)
                               Text(
                                 'Notes: ${serviceData['notes']}',
-                                style: bodyTextStyle,
+                                style: bodyMediumTextStyle,
                               ),
                             const SizedBox(height: 10),
                             Row(

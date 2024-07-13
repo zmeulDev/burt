@@ -105,9 +105,9 @@ class CarsScreen extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(car['model'], style: headingTextStyle),
+                              Text(car['model'], style: titleMediumTextStyle),
                               const SizedBox(height: 8),
-                              Text(car['manufacture'], style: subheadingTextStyle),
+                              Text(car['manufacture'], style: titleMediumTextStyle),
                             ],
                           ),
                         ),
