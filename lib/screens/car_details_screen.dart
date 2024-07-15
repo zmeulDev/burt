@@ -14,8 +14,8 @@ class CarDetailsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text('Car Details')),
-      body: FutureBuilder<DocumentSnapshot>(
-        future: _firestore.collection('cars').doc(carId).get(),
+      body: StreamBuilder<DocumentSnapshot>(
+        stream: _firestore.collection('cars').doc(carId).snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
@@ -103,6 +103,10 @@ class CarDetailsScreen extends StatelessWidget {
                 _buildDetailRow(context, 'Engine Size', carData['engineSize']),
                 _buildDetailRow(context, 'Fuel Type', carData['fuelType']),
                 _buildDetailRow(context, 'Transmission', carData['transmission']),
+                _buildDetailRow(context, 'VIN', carData['vin']),
+                _buildDetailRow(context, 'Tire Size', carData['tireSize']),
+                _buildDetailRow(context, 'Wiper Size', carData['wiperSize']),
+                _buildDetailRow(context, 'Bought Date', carData['boughtDate']),
                 SizedBox(height: 20),
                 Container(
                   width: double.infinity,
