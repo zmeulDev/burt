@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'home_screen.dart';
 
@@ -10,6 +12,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   bool _isLoading = false;
 
   Future<void> _signInWithGoogle() async {
@@ -18,8 +21,35 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      // Implement Google sign-in logic here
-      // After successful sign-in, navigate to HomeScreen
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) {
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final UserCredential userCredential = await _auth.signInWithCredential(credential);
+      final User? user = userCredential.user;
+
+      if (user != null) {
+        DocumentSnapshot doc = await _firestore.collection('users').doc(user.uid).get();
+        if (!doc.exists) {
+          await _firestore.collection('users').doc(user.uid).set({
+            'uid': user.uid,
+            'name': user.displayName ?? '',
+            'email': user.email ?? '',
+            'nickname': '',
+          });
+        }
+      }
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => HomeScreen()),
@@ -45,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
             left: 0,
             right: 0,
             child: SvgPicture.asset(
-              'assets/burt_account.svg', // Ensure this SVG is in your assets folder
+              'assets/burt_account.svg',
               fit: BoxFit.contain,
               height: MediaQuery.of(context).size.height * 0.4,
             ),
@@ -56,7 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Container(
                 padding: EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.6), // Purple container background with opacity
+                  color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.6),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
@@ -78,26 +108,20 @@ class _LoginScreenState extends State<LoginScreen> {
                     SizedBox(height: 24),
                     _isLoading
                         ? CircularProgressIndicator()
-                        : FilledButton.icon(
+                        : ElevatedButton.icon(
                       onPressed: _signInWithGoogle,
-                      icon: Icon(Icons.login),
+                      icon: Icon(Icons.login, color: Colors.white),
                       label: Text('Sign in with Google'),
-                      style: ButtonStyle(
-                        padding: MaterialStateProperty.all(
-                            EdgeInsets.symmetric(horizontal: 24, vertical: 12)),
-                        textStyle: MaterialStateProperty.all(
-                            Theme.of(context).textTheme.labelLarge?.copyWith(
-                              color: Theme.of(context).colorScheme.onPrimary,
-                            )),
-                        shape: MaterialStateProperty.all(
-                          RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        textStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          color: Colors.white,
                         ),
-                        backgroundColor: MaterialStateProperty.all(
-                            Theme.of(context).colorScheme.primary),
-                        foregroundColor: MaterialStateProperty.all(
-                            Theme.of(context).colorScheme.onPrimary),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        backgroundColor: Theme.of(context).colorScheme.secondary,
+                        foregroundColor: Colors.white,
                       ),
                     ),
                   ],

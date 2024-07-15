@@ -17,8 +17,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  late UserModel _userModel;
-  final TextEditingController _nameController = TextEditingController();
+  UserModel? _userModel;
+  final TextEditingController _nicknameController = TextEditingController();
 
   @override
   void initState() {
@@ -29,12 +29,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _loadUserProfile() async {
     User? user = _auth.currentUser;
     if (user != null) {
-      DocumentSnapshot doc = await _firestore.collection('users').doc(user.uid).get();
-      if (doc.exists) {
-        setState(() {
-          _userModel = UserModel.fromMap(doc.data() as Map<String, dynamic>, user.uid);
-          _nameController.text = _userModel.name;
-        });
+      try {
+        DocumentSnapshot doc = await _firestore.collection('users').doc(user.uid).get();
+        if (doc.exists) {
+          setState(() {
+            _userModel = UserModel.fromMap(doc.data() as Map<String, dynamic>, user.uid);
+            _nicknameController.text = _userModel!.nickname ?? "";
+          });
+        }
+      } catch (e) {
+        print("Error loading user data: $e");
       }
     }
   }
@@ -42,8 +46,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _updateUserProfile() async {
     User? user = _auth.currentUser;
     if (user != null) {
-      _userModel = UserModel(uid: user.uid, name: _nameController.text, email: user.email!);
-      await _firestore.collection('users').doc(user.uid).set(_userModel.toMap());
+      _userModel = UserModel(
+        uid: user.uid,
+        nickname: _nicknameController.text,
+      );
+      await _firestore.collection('users').doc(user.uid).set(_userModel!.toMap());
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Profile updated')));
       Navigator.pushReplacement(
         context,
@@ -62,6 +69,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    User? user = _auth.currentUser;
     return Scaffold(
       appBar: AppBar(
         title: Text('Profile'),
@@ -73,7 +81,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
@@ -82,21 +90,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
               size: 100,
               color: Colors.grey,
             ),
-            CustomTextField(controller: _nameController, label: 'Name'),
-            TextFormField(
-              initialValue: _auth.currentUser?.email,
-              decoration: InputDecoration(
-                labelText: 'Email',
-                filled: true,
-                fillColor: Theme.of(context).colorScheme.surfaceVariant,
-                border: OutlineInputBorder(
+            SizedBox(height: 24),
+            if (user != null)
+              Container(
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceVariant,
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
                 ),
-                contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Google Auth Data:',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Name: ${user.displayName ?? "N/A"}',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Email: ${user.email ?? "N/A"}',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ],
+                ),
               ),
-              readOnly: true,
-            ),
+            SizedBox(height: 24),
+            CustomTextField(controller: _nicknameController, label: 'Nickname'),
+            SizedBox(height: 24),
             CustomButton(text: 'Save', onPressed: _updateUserProfile),
           ],
         ),
