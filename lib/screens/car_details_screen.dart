@@ -73,21 +73,11 @@ class CarDetailsScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                SizedBox(height: 20),
-                _buildDetailRow(context, 'Year', carData['year']),
-                _buildDetailRow(context, 'Engine Size', carData['engineSize']),
-                _buildDetailRow(context, 'Fuel Type', carData['fuelType']),
-                _buildDetailRow(context, 'Transmission', carData['transmission']),
-                SizedBox(height: 20),
-                Text('Due Dates', style: Theme.of(context).textTheme.titleLarge),
-                _buildDetailRow(context, 'Next Tax Due', carData['taxDue']),
-                _buildDetailRow(context, 'Next Insurance Due', carData['insuranceDue']),
-                _buildDetailRow(context, 'Next Service Due', carData['serviceDue']),
-                _buildDetailRow(context, 'Next Inspection Due', carData['inspectionDue']),
-                SizedBox(height: 20),
+                SizedBox(height: 10),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    FilledButton.icon(
+                    IconButton(
                       onPressed: () {
                         Navigator.push(
                           context,
@@ -96,28 +86,41 @@ class CarDetailsScreen extends StatelessWidget {
                           ),
                         );
                       },
-                      icon: Icon(Icons.edit),
-                      label: Text('Edit'),
-                      style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all(Theme.of(context).colorScheme.primary),
-                        foregroundColor: MaterialStateProperty.all(Theme.of(context).colorScheme.onPrimary),
-                      ),
+                      icon: Icon(Icons.edit, color: Theme.of(context).colorScheme.primary),
                     ),
-                    SizedBox(width: 20),
-                    FilledButton.icon(
+                    IconButton(
                       onPressed: () async {
                         await _firestore.collection('cars').doc(carId).delete();
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Car deleted successfully')));
                       },
-                      icon: Icon(Icons.delete),
-                      label: Text('Delete'),
-                      style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all(Theme.of(context).colorScheme.error),
-                        foregroundColor: MaterialStateProperty.all(Theme.of(context).colorScheme.onError),
-                      ),
+                      icon: Icon(Icons.delete, color: Theme.of(context).colorScheme.error),
                     ),
                   ],
+                ),
+                SizedBox(height: 20),
+                _buildDetailRow(context, 'Year', carData['year']),
+                _buildDetailRow(context, 'Engine Size', carData['engineSize']),
+                _buildDetailRow(context, 'Fuel Type', carData['fuelType']),
+                _buildDetailRow(context, 'Transmission', carData['transmission']),
+                SizedBox(height: 20),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16.0),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Due Dates', style: Theme.of(context).textTheme.titleLarge),
+                      _buildDetailRow(context, 'Next Tax Due', carData['taxDue']),
+                      _buildDetailRow(context, 'Next Insurance Due', carData['insuranceDue']),
+                      _buildDetailRow(context, 'Next Service Due', carData['serviceDue']),
+                      _buildDetailRow(context, 'Next Inspection Due', carData['inspectionDue']),
+                    ],
+                  ),
                 ),
               ],
             ),
