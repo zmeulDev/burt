@@ -8,7 +8,7 @@ class CarInfoCard extends StatelessWidget {
   final String nextDueDate;
   final VoidCallback onTap;
 
-  CarInfoCard({
+  const CarInfoCard({
     required this.model,
     required this.carPlate,
     required this.nextDueLabel,
@@ -18,49 +18,49 @@ class CarInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+    return Card(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      elevation: 0, // Flat design
+      margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
-        child: Stack(
-          children: [
-            Positioned(
-              right: 0,
-              top: 0,
-              child: Icon(
-                LineIcons.car,
-                size: 120,
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Stack(
+            children: [
+              Positioned(
+                right: 0,
+                bottom: 0,
+                child: Icon(
+                  LineIcons.car,
+                  size: 100,
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     model,
-                    style: Theme.of(context).textTheme.titleMedium,
+                    style: Theme.of(context).textTheme.headlineMedium,
                   ),
-                  SizedBox(height: 4),
                   Text(
-                    'Plate: $carPlate',
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    carPlate,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 4),
+                  SizedBox(height: 10),
                   Text(
                     '$nextDueLabel: $nextDueDate',
-                    style: Theme.of(context).textTheme.bodySmall,
+                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

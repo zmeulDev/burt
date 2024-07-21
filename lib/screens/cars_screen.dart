@@ -1,10 +1,11 @@
-import 'package:burt/widgets/car_info_card.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'add_car_screen.dart';
 import 'car_details_screen.dart';
+import '../widgets/car_info_card.dart'; // Import the CarInfoCard widget
+import '../theme.dart'; // Import the theme
 
 class CarsScreen extends StatelessWidget {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

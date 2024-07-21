@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:line_icons/line_icons.dart';
+import '../widgets/custom_text_field.dart';
+import '../widgets/custom_button.dart';
+import '../widgets/custom_dropdown.dart';
 
 class EditCarScreen extends StatefulWidget {
   final String carId;
@@ -127,11 +130,13 @@ class _EditCarScreenState extends State<EditCarScreen> {
             CustomTextField(
               controller: _yearController,
               label: 'Year *',
+              keyboardType: TextInputType.number,
               prefixIcon: Icon(LineIcons.calendarAlt),
             ),
             CustomTextField(
               controller: _engineSizeController,
               label: 'Engine Size',
+              keyboardType: TextInputType.number,
               prefixIcon: Icon(LineIcons.cogs),
             ),
             CustomTextField(
@@ -150,50 +155,26 @@ class _EditCarScreenState extends State<EditCarScreen> {
               prefixIcon: Icon(LineIcons.wind),
             ),
             SizedBox(height: 16),
-            Text('Fuel Type', style: Theme.of(context).textTheme.titleLarge),
-            DropdownButtonFormField<String>(
+            CustomDropdown(
               value: _fuelType,
-              items: <String>['Petrol', 'Diesel', 'Electric', 'Hybrid', 'Other'].map((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
+              items: ['Petrol', 'Diesel', 'Electric', 'Hybrid', 'Other'],
               onChanged: (newValue) {
                 setState(() {
                   _fuelType = newValue!;
                 });
               },
-              decoration: InputDecoration(
-                labelText: 'Select Fuel Type',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-              ),
+              label: 'Select Fuel Type',
             ),
             SizedBox(height: 16),
-            Text('Transmission', style: Theme.of(context).textTheme.titleLarge),
-            DropdownButtonFormField<String>(
+            CustomDropdown(
               value: _transmission,
-              items: <String>['Manual', 'Automatic', 'Other'].map((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
+              items: ['Manual', 'Automatic', 'Other'],
               onChanged: (newValue) {
                 setState(() {
                   _transmission = newValue!;
                 });
               },
-              decoration: InputDecoration(
-                labelText: 'Select Transmission',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-              ),
+              label: 'Select Transmission',
             ),
             CustomTextField(
               controller: _carPlateController,
@@ -256,58 +237,6 @@ class _EditCarScreenState extends State<EditCarScreen> {
             SizedBox(height: 16),
             CustomButton(text: 'Save', onPressed: () => _updateCar(context)),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class CustomTextField extends StatelessWidget {
-  final TextEditingController controller;
-  final String label;
-  final Widget? prefixIcon;
-
-  CustomTextField({
-    required this.controller,
-    required this.label,
-    this.prefixIcon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: TextFormField(
-        controller: controller,
-        decoration: InputDecoration(
-          labelText: label,
-          prefixIcon: prefixIcon,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class CustomButton extends StatelessWidget {
-  final String text;
-  final VoidCallback onPressed;
-
-  CustomButton({required this.text, required this.onPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        child: Text(text),
-        style: ElevatedButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
         ),
       ),
     );

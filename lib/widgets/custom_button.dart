@@ -16,7 +16,9 @@ class CustomButton extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          textStyle: TextStyle(
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          foregroundColor: Theme.of(context).colorScheme.onPrimary,
+          textStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),

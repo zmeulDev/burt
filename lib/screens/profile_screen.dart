@@ -119,7 +119,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
             SizedBox(height: 24),
-            CustomTextField(controller: _nicknameController, label: 'Nickname'),
+            CustomTextField(
+              controller: _nicknameController,
+              label: 'Nickname',
+              prefixIcon: Icon(LineIcons.user, color: Theme.of(context).colorScheme.onSurfaceVariant),
+            ),
             SizedBox(height: 24),
             CustomButton(text: 'Save', onPressed: _updateUserProfile),
           ],

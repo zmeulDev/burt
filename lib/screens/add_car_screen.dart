@@ -1,10 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:burt/widgets/custom_dropdown.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:line_icons/line_icons.dart';
-import '../widgets/custom_text_field.dart';
+
 import '../widgets/custom_button.dart';
+import '../widgets/custom_text_field.dart';
 import 'cars_screen.dart';
 
 class AddCarScreen extends StatefulWidget {
@@ -24,7 +26,8 @@ class _AddCarScreenState extends State<AddCarScreen> {
   final TextEditingController _taxDueController = TextEditingController();
   final TextEditingController _insuranceDueController = TextEditingController();
   final TextEditingController _serviceDueController = TextEditingController();
-  final TextEditingController _inspectionDueController = TextEditingController();
+  final TextEditingController _inspectionDueController =
+  TextEditingController();
   final TextEditingController _boughtDateController = TextEditingController();
 
   String _fuelType = 'Petrol';
@@ -34,8 +37,11 @@ class _AddCarScreenState extends State<AddCarScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<void> _addCar(BuildContext context) async {
-    if (_modelController.text.isEmpty || _yearController.text.isEmpty || _carPlateController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Model, Year, and Car Plate are mandatory')));
+    if (_modelController.text.isEmpty ||
+        _yearController.text.isEmpty ||
+        _carPlateController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Model, Year, and Car Plate are mandatory')));
       return;
     }
 
@@ -63,11 +69,13 @@ class _AddCarScreenState extends State<AddCarScreen> {
         context,
         MaterialPageRoute(builder: (context) => CarsScreen()),
       );
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Car added successfully')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Car added successfully')));
     }
   }
 
-  Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
+  Future<void> _selectDate(
+      BuildContext context, TextEditingController controller) async {
     DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -90,7 +98,8 @@ class _AddCarScreenState extends State<AddCarScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Car Information', style: Theme.of(context).textTheme.titleLarge),
+            Text('Car Information',
+                style: Theme.of(context).textTheme.titleLarge),
             SizedBox(height: 16),
             CustomTextField(
               controller: _makerController,
@@ -105,11 +114,13 @@ class _AddCarScreenState extends State<AddCarScreen> {
             CustomTextField(
               controller: _yearController,
               label: 'Year *',
+              keyboardType: TextInputType.number,
               prefixIcon: Icon(LineIcons.calendarAlt),
             ),
             CustomTextField(
               controller: _engineSizeController,
               label: 'Engine Size',
+              keyboardType: TextInputType.number,
               prefixIcon: Icon(LineIcons.cogs),
             ),
             CustomTextField(
@@ -128,51 +139,25 @@ class _AddCarScreenState extends State<AddCarScreen> {
               prefixIcon: Icon(LineIcons.wind),
             ),
             SizedBox(height: 16),
-            Text('Fuel Type', style: Theme.of(context).textTheme.titleLarge),
-            DropdownButtonFormField<String>(
-              value: _fuelType,
-              items: <String>['Petrol', 'Diesel', 'Electric', 'Hybrid', 'Other'].map((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-              onChanged: (newValue) {
-                setState(() {
-                  _fuelType = newValue!;
-                });
-              },
-              decoration: InputDecoration(
-                labelText: 'Select Fuel Type',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-              ),
-            ),
+            CustomDropdown(
+                value: _fuelType,
+                items: ['Petrol', 'Diesel', 'Electric', 'Hybrid', 'Other'],
+                onChanged: (newValue) {
+                  setState(() {
+                    _fuelType = newValue!;
+                  });
+                },
+                label: 'Select Fuel Type'),
             SizedBox(height: 16),
-            Text('Transmission', style: Theme.of(context).textTheme.titleLarge),
-            DropdownButtonFormField<String>(
-              value: _transmission,
-              items: <String>['Manual', 'Automatic', 'Other'].map((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-              onChanged: (newValue) {
-                setState(() {
-                  _transmission = newValue!;
-                });
-              },
-              decoration: InputDecoration(
-                labelText: 'Select Transmission',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-              ),
-            ),
+            CustomDropdown(
+                value: _transmission,
+                items: ['Manual', 'Automatic', 'Other'],
+                onChanged: (newValue) {
+                  setState(() {
+                    _transmission = newValue!;
+                  });
+                },
+                label: 'Select Transmission'),
             CustomTextField(
               controller: _carPlateController,
               label: 'Car Plate *',
