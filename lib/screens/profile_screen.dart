@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:line_icons/line_icons.dart';
+import 'package:provider/provider.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/custom_button.dart';
 import '../models/user_model.dart';
 import 'home_screen.dart';
 import 'login_screen.dart';
+import '../theme_notifier.dart';
 
 class ProfileScreen extends StatefulWidget {
   @override
@@ -19,6 +21,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   UserModel? _userModel;
   final TextEditingController _nicknameController = TextEditingController();
+  String _selectedTheme = 'Light';
 
   @override
   void initState() {
@@ -69,7 +72,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    User? user = _auth.currentUser;
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Profile'),
@@ -91,7 +95,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               color: Colors.grey,
             ),
             SizedBox(height: 24),
-            if (user != null)
+            if (_auth.currentUser != null)
               Container(
                 padding: EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -107,12 +111,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     SizedBox(height: 8),
                     Text(
-                      'Name: ${user.displayName ?? "N/A"}',
+                      'Name: ${_auth.currentUser!.displayName ?? "N/A"}',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     SizedBox(height: 4),
                     Text(
-                      'Email: ${user.email ?? "N/A"}',
+                      'Email: ${_auth.currentUser!.email ?? "N/A"}',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ],
@@ -123,6 +127,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
               controller: _nicknameController,
               label: 'Nickname',
               prefixIcon: Icon(LineIcons.user, color: Theme.of(context).colorScheme.onSurfaceVariant),
+            ),
+            SizedBox(height: 24),
+            DropdownButtonFormField<String>(
+              value: _selectedTheme,
+              items: <String>['Light', 'Dark', 'Light High Contrast', 'Dark High Contrast'].map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                if (newValue != null) {
+                  setState(() {
+                    _selectedTheme = newValue;
+                    themeNotifier.setTheme(ThemeNotifier.getThemeByName(newValue));
+                  });
+                }
+              },
+              decoration: InputDecoration(
+                labelText: 'Select Theme',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+              ),
             ),
             SizedBox(height: 24),
             CustomButton(text: 'Save', onPressed: _updateUserProfile),
