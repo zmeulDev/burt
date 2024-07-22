@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
 
     return MaterialApp(
       title: 'Burt Car Management',
-      theme: MaterialTheme(textTheme).lightHighContrast(), // Use the light theme
+      theme: MaterialTheme(textTheme).dark(), // Use the light theme
       home: LoginScreen(),
     );
   }
