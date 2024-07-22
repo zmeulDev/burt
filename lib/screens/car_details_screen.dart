@@ -1,7 +1,12 @@
+import 'package:burt/screens/edit_car_screen.dart';
+import 'package:burt/widgets/car_details_tab.dart';
+import 'package:burt/widgets/car_due_dates_tab.dart';
+import 'package:burt/widgets/car_service_history_tab.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:line_icons/line_icons.dart';
-import 'edit_car_screen.dart';// Import the theme
+
+
 
 class CarDetailsScreen extends StatelessWidget {
   final String carId;
@@ -12,38 +17,28 @@ class CarDetailsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-    return Scaffold(
-      appBar: AppBar(title: Text('Car Details')),
-      body: StreamBuilder<DocumentSnapshot>(
-        stream: _firestore.collection('cars').doc(carId).snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
-          if (!snapshot.hasData || !snapshot.data!.exists) {
-            return Center(child: Text('Car not found.'));
-          }
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Car Details'),
+        ),
+        body: StreamBuilder<DocumentSnapshot>(
+          stream: _firestore.collection('cars').doc(carId).snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            }
+            if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            }
+            if (!snapshot.hasData || !snapshot.data!.exists) {
+              return Center(child: Text('Car not found.'));
+            }
 
-          var carData = snapshot.data!.data() as Map<String, dynamic>;
+            var carData = snapshot.data!.data() as Map<String, dynamic>;
 
-          // Create a list of due dates
-          List<Map<String, dynamic>> dueDates = [
-            {'label': 'Next Tax Due', 'date': carData['taxDue'], 'icon': LineIcons.moneyBill, 'step': 1},
-            {'label': 'Next Insurance Due', 'date': carData['insuranceDue'], 'icon': LineIcons.userShield, 'step': 2},
-            {'label': 'Next Service Due', 'date': carData['serviceDue'], 'icon': LineIcons.tools, 'step': 3},
-            {'label': 'Next Inspection Due', 'date': carData['inspectionDue'], 'icon': LineIcons.search, 'step': 4},
-          ];
-
-          // Sort the due dates in descending order
-          dueDates.sort((a, b) => (b['date'] ?? '').compareTo(a['date'] ?? ''));
-
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            return Column(
               children: [
                 Container(
                   width: double.infinity,
@@ -109,82 +104,27 @@ class CarDetailsScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: 20),
-                _buildDetailRow(context, 'Year', carData['year']),
-                _buildDetailRow(context, 'Engine Size', carData['engineSize']),
-                _buildDetailRow(context, 'Fuel Type', carData['fuelType']),
-                _buildDetailRow(context, 'Transmission', carData['transmission']),
-                _buildDetailRow(context, 'VIN', carData['vin']),
-                _buildDetailRow(context, 'Tire Size', carData['tireSize']),
-                _buildDetailRow(context, 'Wiper Size', carData['wiperSize']),
-                _buildDetailRow(context, 'Bought Date', carData['boughtDate']),
-                SizedBox(height: 20),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16.0),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                SizedBox(height: 10),
+                TabBar(
+                  tabs: [
+                    Tab(text: 'Due Dates'),
+                    Tab(text: 'Details'),
+                    Tab(text: 'Service History'),
+                  ],
+                ),
+                Expanded(
+                  child: TabBarView(
                     children: [
-                      Text('Due Dates', style: Theme.of(context).textTheme.titleLarge),
-                      ...dueDates.map((dueDate) => _buildTimelineItem(context, dueDate['label'], dueDate['date'], dueDate['icon'], dueDate['step'])).toList(),
+                      DueDatesTab(carData: carData),
+                      DetailsTab(carData: carData),
+                      ServiceHistoryTab(carId: carId),
                     ],
                   ),
                 ),
               ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(BuildContext context, String label, dynamic value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          Text(
-            value != null ? value.toString() : 'N/A',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTimelineItem(BuildContext context, String label, dynamic date, IconData icon, int step) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: Theme.of(context).colorScheme.primary),
-          SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Step $step: $label',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                Text(
-                  date != null ? date.toString() : 'N/A',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ],
-            ),
-          ),
-        ],
+            );
+          },
+        ),
       ),
     );
   }
