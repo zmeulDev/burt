@@ -1,9 +1,10 @@
+import 'package:burt/widgets/service_expenses_chart.dart';
+import 'package:flutter/material.dart';
 import 'package:burt/widgets/custom_bottom_nav_bar.dart';
 import 'package:burt/widgets/recent_services_widget.dart';
 import 'package:burt/widgets/service_alerts_widget.dart';
 import 'package:burt/widgets/service_card.dart';
 import 'package:burt/widgets/upcoming_services_widget.dart';
-import 'package:flutter/material.dart';
 import 'cars_screen.dart';
 import 'service_screen.dart';
 import 'profile_screen.dart';
@@ -59,7 +60,7 @@ class HomeContentScreen extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              color: Theme.of(context).colorScheme.surface,
               child: ListTile(
                 title: Text(
                   'Your Car',
@@ -71,6 +72,8 @@ class HomeContentScreen extends StatelessWidget {
                 ),
               ),
             ),
+            SizedBox(height: 16),
+            ServiceExpensesDoughnutChart(),
             SizedBox(height: 16),
             // Sections for services
             ServiceCard(

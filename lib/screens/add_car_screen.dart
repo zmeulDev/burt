@@ -26,8 +26,7 @@ class _AddCarScreenState extends State<AddCarScreen> {
   final TextEditingController _taxDueController = TextEditingController();
   final TextEditingController _insuranceDueController = TextEditingController();
   final TextEditingController _serviceDueController = TextEditingController();
-  final TextEditingController _inspectionDueController =
-  TextEditingController();
+  final TextEditingController _inspectionDueController = TextEditingController();
   final TextEditingController _boughtDateController = TextEditingController();
 
   String _fuelType = 'Petrol';
@@ -39,9 +38,14 @@ class _AddCarScreenState extends State<AddCarScreen> {
   Future<void> _addCar(BuildContext context) async {
     if (_modelController.text.isEmpty ||
         _yearController.text.isEmpty ||
-        _carPlateController.text.isEmpty) {
+        _carPlateController.text.isEmpty ||
+        _taxDueController.text.isEmpty ||
+        _insuranceDueController.text.isEmpty ||
+        _serviceDueController.text.isEmpty ||
+        _inspectionDueController.text.isEmpty
+        ) {
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Model, Year, and Car Plate are mandatory')));
+          SnackBar(content: Text('Model, Year, Car Plate, Tax, Insurance, Serivice and Inspection are mandatory')));
       return;
     }
 
@@ -171,7 +175,7 @@ class _AddCarScreenState extends State<AddCarScreen> {
               child: AbsorbPointer(
                 child: CustomTextField(
                   controller: _taxDueController,
-                  label: 'Next Tax Due',
+                  label: 'Next Tax Due *',
                   prefixIcon: Icon(LineIcons.calendarCheck),
                 ),
               ),
@@ -181,7 +185,7 @@ class _AddCarScreenState extends State<AddCarScreen> {
               child: AbsorbPointer(
                 child: CustomTextField(
                   controller: _insuranceDueController,
-                  label: 'Next Insurance Due',
+                  label: 'Next Insurance Due *',
                   prefixIcon: Icon(LineIcons.calendarCheck),
                 ),
               ),
@@ -191,7 +195,7 @@ class _AddCarScreenState extends State<AddCarScreen> {
               child: AbsorbPointer(
                 child: CustomTextField(
                   controller: _serviceDueController,
-                  label: 'Next Service Due',
+                  label: 'Next Service Due *',
                   prefixIcon: Icon(LineIcons.calendarCheck),
                 ),
               ),
@@ -201,7 +205,7 @@ class _AddCarScreenState extends State<AddCarScreen> {
               child: AbsorbPointer(
                 child: CustomTextField(
                   controller: _inspectionDueController,
-                  label: 'Next Inspection Due',
+                  label: 'Next Inspection Due *',
                   prefixIcon: Icon(LineIcons.calendarCheck),
                 ),
               ),
@@ -211,7 +215,7 @@ class _AddCarScreenState extends State<AddCarScreen> {
               child: AbsorbPointer(
                 child: CustomTextField(
                   controller: _boughtDateController,
-                  label: 'Bought Date',
+                  label: 'Owner from',
                   prefixIcon: Icon(LineIcons.calendarCheck),
                 ),
               ),
