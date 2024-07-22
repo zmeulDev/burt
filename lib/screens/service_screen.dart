@@ -101,6 +101,8 @@ class ServiceScreen extends StatelessWidget {
         },
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Theme.of(context).cardColor,
         onPressed: () {
           Navigator.push(context, MaterialPageRoute(builder: (context) => AddServiceRecordScreen()));
         },

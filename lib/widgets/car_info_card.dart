@@ -36,9 +36,9 @@ class CarInfoCard extends StatelessWidget {
                 right: 0,
                 bottom: 0,
                 child: Icon(
-                  LineIcons.car,
+                  LineIcons.carCrash,
                   size: 100,
-                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
                 ),
               ),
               Column(
@@ -50,7 +50,7 @@ class CarInfoCard extends StatelessWidget {
                   ),
                   Text(
                     carPlate,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                    style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   SizedBox(height: 10),
                   Text(

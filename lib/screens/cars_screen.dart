@@ -1,11 +1,11 @@
+import 'package:burt/widgets/car_info_card.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'add_car_screen.dart';
 import 'car_details_screen.dart';
-import '../widgets/car_info_card.dart'; // Import the CarInfoCard widget
-import '../theme.dart'; // Import the theme
+
 
 class CarsScreen extends StatelessWidget {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -73,6 +73,8 @@ class CarsScreen extends StatelessWidget {
         },
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Theme.of(context).cardColor,
         onPressed: () {
           Navigator.push(
             context,
@@ -99,7 +101,7 @@ class CarsScreen extends StatelessWidget {
       'Inspection Due': inspectionDue,
     };
 
-    String nextDueLabel = '';
+    String nextDueLabel = 'Next';
     DateTime? nextDueDate;
 
     dueDates.forEach((label, date) {
@@ -111,7 +113,7 @@ class CarsScreen extends StatelessWidget {
 
     return {
       'label': nextDueLabel,
-      'date': nextDueDate != null ? nextDueDate!.toLocal().toString().split(' ')[0] : 'N/A',
+      'date': nextDueDate != null ? nextDueDate!.toLocal().toString().split(' ')[0] : 'Nothing to do!',
     };
   }
 }

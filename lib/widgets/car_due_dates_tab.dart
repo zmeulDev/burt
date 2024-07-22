@@ -10,10 +10,10 @@ class DueDatesTab extends StatelessWidget {
   Widget build(BuildContext context) {
     // Create a list of due dates
     List<Map<String, dynamic>> dueDates = [
-      {'label': 'Next Tax Due', 'date': carData['taxDue'], 'icon': LineIcons.moneyBill},
-      {'label': 'Next Insurance Due', 'date': carData['insuranceDue'], 'icon': LineIcons.userShield},
-      {'label': 'Next Service Due', 'date': carData['serviceDue'], 'icon': LineIcons.tools},
-      {'label': 'Next Inspection Due', 'date': carData['inspectionDue'], 'icon': LineIcons.search},
+      {'label': 'Next Tax', 'date': carData['taxDue'], 'icon': LineIcons.moneyBill},
+      {'label': 'Next Insurance', 'date': carData['insuranceDue'], 'icon': LineIcons.userShield},
+      {'label': 'Next Service', 'date': carData['serviceDue'], 'icon': LineIcons.tools},
+      {'label': 'Next Inspection', 'date': carData['inspectionDue'], 'icon': LineIcons.search},
     ];
 
     // Sort the due dates in descending order
@@ -24,52 +24,45 @@ class DueDatesTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Due Dates', style: Theme.of(context).textTheme.titleLarge),
-          SizedBox(height: 16),
-          Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: GridView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 2, // Adjust this value to make the grid items taller
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              GridView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 2,
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 8,
+                ),
+                itemCount: dueDates.length,
+                itemBuilder: (context, index) {
+                  final dueDate = dueDates[index];
+                  return _buildTimelineItem(context, dueDate['label'], dueDate['date'], dueDate['icon']);
+                },
               ),
-              itemCount: dueDates.length,
-              itemBuilder: (context, index) {
-                final dueDate = dueDates[index];
-                return _buildGridItem(context, dueDate['label'], dueDate['date'], dueDate['icon']);
-              },
-            ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildGridItem(BuildContext context, String label, dynamic date, IconData icon) {
-    bool isFutureDate = false;
-    if (date != null) {
-      final parsedDate = DateTime.tryParse(date);
-      if (parsedDate != null) {
-        isFutureDate = parsedDate.isAfter(DateTime.now());
-      }
-    }
+  Widget _buildTimelineItem(BuildContext context, String label, dynamic date, IconData icon) {
+    bool isFutureDate = date != null && DateTime.tryParse(date)!.isAfter(DateTime.now());
+
     return Container(
       padding: const EdgeInsets.all(8.0),
       decoration: BoxDecoration(
-        color: isFutureDate ? Theme.of(context).colorScheme.errorContainer.withOpacity(0.5) : Theme.of(context).colorScheme.primary.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(12),
+        color: isFutureDate ? Theme.of(context).colorScheme.error.withOpacity(0.2) : Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(8),
       ),
+
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: Theme.of(context).colorScheme.onPrimary),
+          Icon(icon, color: Theme.of(context).colorScheme.primary),
           SizedBox(width: 8),
           Expanded(
             child: Column(
