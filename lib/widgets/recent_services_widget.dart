@@ -32,7 +32,7 @@ class RecentServicesWidget extends StatelessWidget {
           children: services.map((doc) {
             final service = doc.data() as Map<String, dynamic>;
             return ListTile(
-              title: Text(service['name'] ?? 'N/A'),
+              title: Text(service['serviceName'] ?? 'N/A'),
               subtitle: Text(service['date'] ?? 'N/A'),
             );
           }).toList(),
