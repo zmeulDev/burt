@@ -387,3 +387,13 @@ class ColorFamily {
   final Color colorContainer;
   final Color onColorContainer;
 }
+
+enum AppTheme {
+  Light,
+  Dark,
+  LightMediumContrast,
+  LightHighContrast,
+  DarkMediumContrast,
+  DarkHighContrast,
+}
+
