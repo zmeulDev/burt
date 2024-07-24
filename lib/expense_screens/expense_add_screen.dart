@@ -6,6 +6,9 @@ import 'package:burt/services/expense_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+
+
 
 class ExpenseAddScreen extends StatefulWidget {
   @override
@@ -19,6 +22,41 @@ class _ExpenseAddScreenState extends State<ExpenseAddScreen> {
   late String _userId;
   late List<Car> _cars;
   String? _selectedCarId;
+
+  // Controllers to preserve input data
+  final _taxValidFromController = TextEditingController();
+  final _taxValidToController = TextEditingController();
+  final _serviceDateController = TextEditingController();
+  final _serviceReminderController = TextEditingController();
+  final _otherDateController = TextEditingController();
+  final _otherReminderController = TextEditingController();
+
+  @override
+  void dispose() {
+    // Dispose controllers when the widget is disposed
+    _taxValidFromController.dispose();
+    _taxValidToController.dispose();
+    _serviceDateController.dispose();
+    _serviceReminderController.dispose();
+    _otherDateController.dispose();
+    _otherReminderController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _selectDate(BuildContext context, TextEditingController controller, String key) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null) {
+      setState(() {
+        _details[key] = DateFormat('yyyy-MM-dd').format(picked);
+        controller.text = _details[key];
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,6 +113,7 @@ class _ExpenseAddScreenState extends State<ExpenseAddScreen> {
                             child: Text(car.carPlate),
                           );
                         }).toList(),
+                        validator: (value) => value == null ? 'Please select a car' : null,
                       ),
                       DropdownButtonFormField<String>(
                         decoration: InputDecoration(labelText: 'Type'),
@@ -106,11 +145,11 @@ class _ExpenseAddScreenState extends State<ExpenseAddScreen> {
                               carId: _selectedCarId!,
                               type: _selectedType,
                               date: DateTime.now(),
-                              cost: int.parse(_details['cost']),
+                              cost: int.parse(_details['cost'] ?? '0'),
                               details: _details,
                             );
                             await ExpenseService().addExpense(expense);
-                            Navigator.pop(context);
+                            Navigator.pop(context); // Navigate back to ExpensesViewScreen
                           }
                         },
                         child: Text('Add Expense'),
@@ -147,26 +186,43 @@ class _ExpenseAddScreenState extends State<ExpenseAddScreen> {
         ),
         TextFormField(
           decoration: InputDecoration(labelText: 'Tax Broker'),
+          initialValue: _details['taxBroker'],
+          onChanged: (value) => _details['taxBroker'] = value,
           onSaved: (value) => _details['taxBroker'] = value ?? '',
         ),
         TextFormField(
           decoration: InputDecoration(labelText: 'Tax Cost'),
+          initialValue: _details['cost'],
           keyboardType: TextInputType.number,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter a cost';
+            }
+            if (int.tryParse(value) == null) {
+              return 'Please enter a valid number';
+            }
+            return null;
+          },
+          onChanged: (value) => _details['cost'] = value,
           onSaved: (value) => _details['cost'] = value ?? '0',
         ),
         TextFormField(
           decoration: InputDecoration(labelText: 'Valid From'),
-          keyboardType: TextInputType.datetime,
-          onSaved: (value) => _details['taxValidFrom'] = value ?? '',
+          readOnly: true,
+          onTap: () => _selectDate(context, _taxValidFromController, 'taxValidFrom'),
+          controller: _taxValidFromController..text = _details['taxValidFrom'] ?? '',
         ),
         TextFormField(
           decoration: InputDecoration(labelText: 'Valid To'),
-          keyboardType: TextInputType.datetime,
-          onSaved: (value) => _details['taxValidTo'] = value ?? '',
+          readOnly: true,
+          onTap: () => _selectDate(context, _taxValidToController, 'taxValidTo'),
+          controller: _taxValidToController..text = _details['taxValidTo'] ?? '',
         ),
         TextFormField(
           decoration: InputDecoration(labelText: 'Notes'),
+          initialValue: _details['taxNotes'],
           maxLines: 3,
+          onChanged: (value) => _details['taxNotes'] = value,
           onSaved: (value) => _details['taxNotes'] = value ?? '',
         ),
       ],
@@ -194,37 +250,58 @@ class _ExpenseAddScreenState extends State<ExpenseAddScreen> {
         ),
         TextFormField(
           decoration: InputDecoration(labelText: 'Service Name'),
+          initialValue: _details['serviceName'],
+          onChanged: (value) => _details['serviceName'] = value,
           onSaved: (value) => _details['serviceName'] = value ?? '',
         ),
         TextFormField(
           decoration: InputDecoration(labelText: 'Service Contact'),
+          initialValue: _details['serviceContact'],
           keyboardType: TextInputType.phone,
+          onChanged: (value) => _details['serviceContact'] = value,
           onSaved: (value) => _details['serviceContact'] = value ?? '',
         ),
         TextFormField(
           decoration: InputDecoration(labelText: 'Service Cost'),
+          initialValue: _details['cost'],
           keyboardType: TextInputType.number,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter a cost';
+            }
+            if (int.tryParse(value) == null) {
+              return 'Please enter a valid number';
+            }
+            return null;
+          },
+          onChanged: (value) => _details['cost'] = value,
           onSaved: (value) => _details['cost'] = value ?? '0',
         ),
         TextFormField(
           decoration: InputDecoration(labelText: 'Service Details'),
+          initialValue: _details['serviceDetails'],
           maxLines: 3,
+          onChanged: (value) => _details['serviceDetails'] = value,
           onSaved: (value) => _details['serviceDetails'] = value ?? '',
         ),
         TextFormField(
           decoration: InputDecoration(labelText: 'Service Warranty (months)'),
+          initialValue: _details['serviceWarranty'],
           keyboardType: TextInputType.number,
+          onChanged: (value) => _details['serviceWarranty'] = value,
           onSaved: (value) => _details['serviceWarranty'] = value ?? '0',
         ),
         TextFormField(
           decoration: InputDecoration(labelText: 'Service Date'),
-          keyboardType: TextInputType.datetime,
-          onSaved: (value) => _details['serviceDate'] = value ?? '',
+          readOnly: true,
+          onTap: () => _selectDate(context, _serviceDateController, 'serviceDate'),
+          controller: _serviceDateController..text = _details['serviceDate'] ?? '',
         ),
         TextFormField(
           decoration: InputDecoration(labelText: 'Service Reminder'),
-          keyboardType: TextInputType.datetime,
-          onSaved: (value) => _details['serviceReminder'] = value ?? '',
+          readOnly: true,
+          onTap: () => _selectDate(context, _serviceReminderController, 'serviceReminder'),
+          controller: _serviceReminderController..text = _details['serviceReminder'] ?? '',
         ),
       ],
     );
@@ -235,29 +312,52 @@ class _ExpenseAddScreenState extends State<ExpenseAddScreen> {
       children: [
         TextFormField(
           decoration: InputDecoration(labelText: 'Other Name'),
+          initialValue: _details['otherName'],
+          onChanged: (value) => _details['otherName'] = value,
           onSaved: (value) => _details['otherName'] = value ?? '',
         ),
         TextFormField(
           decoration: InputDecoration(labelText: 'Other Date'),
-          keyboardType: TextInputType.datetime,
-          onSaved: (value) => _details['otherDate'] = value ?? '',
+          readOnly: true,
+          onTap: () => _selectDate(context, _otherDateController, 'otherDate'),
+          controller: _otherDateController..text = _details['otherDate'] ?? '',
         ),
         TextFormField(
           decoration: InputDecoration(labelText: 'Other Reminder'),
-          keyboardType: TextInputType.datetime,
-          onSaved: (value) => _details['otherReminder'] = value ?? '',
+          readOnly: true,
+          onTap: () => _selectDate(context, _otherReminderController, 'otherReminder'),
+          controller: _otherReminderController..text = _details['otherReminder'] ?? '',
         ),
         TextFormField(
           decoration: InputDecoration(labelText: 'Other Cost'),
+          initialValue: _details['cost'],
           keyboardType: TextInputType.number,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter a cost';
+            }
+            if (int.tryParse(value) == null) {
+              return 'Please enter a valid number';
+            }
+            return null;
+          },
+          onChanged: (value) => _details['cost'] = value,
           onSaved: (value) => _details['cost'] = value ?? '0',
         ),
         TextFormField(
           decoration: InputDecoration(labelText: 'Other Details'),
+          initialValue: _details['otherDetails'],
           maxLines: 3,
+          onChanged: (value) => _details['otherDetails'] = value,
           onSaved: (value) => _details['otherDetails'] = value ?? '',
         ),
       ],
     );
   }
 }
+
+
+
+
+
+

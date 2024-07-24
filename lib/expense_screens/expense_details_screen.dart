@@ -5,6 +5,8 @@ import 'package:burt/services/expense_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'expense_edit_screen.dart';
+import 'package:intl/intl.dart';
+
 
 class ExpenseDetailsScreen extends StatelessWidget {
   final String expenseId;
@@ -31,6 +33,7 @@ class ExpenseDetailsScreen extends StatelessWidget {
           }
 
           final expense = snapshot.data!;
+          final formattedDate = DateFormat('yyyy-MM-dd').format(expense.date);
 
           return FutureBuilder<Car?>(
             future: carService.getCarById(expense.carId),
@@ -46,23 +49,42 @@ class ExpenseDetailsScreen extends StatelessWidget {
                 child: ListView(
                   children: [
                     Card(
-                      elevation: 4,
+                      elevation: 0,
                       margin: EdgeInsets.symmetric(vertical: 8.0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(color: Theme.of(context).colorScheme.outline),
+                      ),
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Car Plate: ${car?.carPlate ?? 'Unknown'}', style: TextStyle(fontSize: 18)),
+                            Text(
+                              'Car Plate: ${car?.carPlate ?? 'Unknown'}',
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
                             SizedBox(height: 8),
-                            Text('Type: ${expense.type}', style: TextStyle(fontSize: 18)),
+                            Text(
+                              'Type: ${expense.type}',
+                              style: TextStyle(fontSize: 18),
+                            ),
                             SizedBox(height: 8),
-                            Text('Date: ${expense.date.toLocal()}', style: TextStyle(fontSize: 18)),
+                            Text(
+                              'Date: $formattedDate',
+                              style: TextStyle(fontSize: 18),
+                            ),
                             SizedBox(height: 8),
-                            Text('Cost: \$${expense.cost.toString()}', style: TextStyle(fontSize: 18)),
+                            Text(
+                              'Cost: \$${expense.cost.toString()}',
+                              style: TextStyle(fontSize: 18),
+                            ),
                             SizedBox(height: 8),
                             if (expense.details['notes'] != null)
-                              Text('Notes: ${expense.details['notes']}', style: TextStyle(fontSize: 18)),
+                              Text(
+                                'Notes: ${expense.details['notes']}',
+                                style: TextStyle(fontSize: 18),
+                              ),
                           ],
                         ),
                       ),
@@ -106,4 +128,5 @@ class ExpenseDetailsScreen extends StatelessWidget {
     );
   }
 }
+
 
