@@ -1,10 +1,11 @@
+import 'package:burt/auth_service.dart';
+import 'package:burt/login_screen.dart';
+import 'package:burt/main_screen.dart';
+import 'package:burt/services/car_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
-import 'auth_service.dart';
-import 'main_screen.dart';
-import 'login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,8 +16,11 @@ void main() async {
 class BurtCarManagerApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<AuthService>(
-      create: (_) => AuthService(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<AuthService>(create: (_) => AuthService()),
+        Provider<CarService>(create: (_) => CarService()),
+      ],
       child: Consumer<AuthService>(
         builder: (context, authService, _) {
           return MaterialApp(
@@ -29,7 +33,7 @@ class BurtCarManagerApp extends StatelessWidget {
                   final User? user = snapshot.data;
                   return user == null ? LoginScreen() : MainScreen();
                 }
-                return CircularProgressIndicator();
+                return Center(child: CircularProgressIndicator());
               },
             ),
           );
