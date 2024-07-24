@@ -1,6 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:encrypt/encrypt.dart' as encrypt;
 import 'theme.dart';
@@ -50,7 +50,7 @@ class AuthService extends ChangeNotifier {
     );
 
     final UserCredential userCredential = await _auth.signInWithCredential(credential);
-    await _updateUserData(userCredential.user);
+    await _updateUserData(userCredential.user, 'google');
     notifyListeners();
     return userCredential.user;
   }
@@ -58,7 +58,7 @@ class AuthService extends ChangeNotifier {
   Future<User?> signInWithEmail(String email, String password) async {
     try {
       final UserCredential userCredential = await _auth.signInWithEmailAndPassword(email: email, password: password);
-      await _updateUserData(userCredential.user);
+      await _updateUserData(userCredential.user, 'email');
       notifyListeners();
       return userCredential.user;
     } on FirebaseAuthException catch (e) {
@@ -78,19 +78,43 @@ class AuthService extends ChangeNotifier {
 
   Future<User?> createUserWithEmail(String email, String password) async {
     final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
-    await _updateUserData(userCredential.user);
+    await _updateUserData(userCredential.user, 'email');
     notifyListeners();
     return userCredential.user;
   }
 
-  Future<void> _updateUserData(User? user) async {
+  Future<void> _updateUserData(User? user, String authMethod) async {
     if (user != null) {
       final userRef = _firestore.collection('users').doc(user.uid);
-      await userRef.set({
-        'uid': user.uid,
-        'email': user.email,
-        'displayName': user.displayName,
-      }, SetOptions(merge: true));
+      final doc = await userRef.get();
+      if (doc.exists) {
+        // Check if phone number exists before updating
+        final existingPhoneNumber = doc['phoneNumber'];
+        if (existingPhoneNumber == null || existingPhoneNumber.isEmpty) {
+          await userRef.set({
+            'uid': user.uid,
+            'email': user.email,
+            'displayName': user.displayName,
+            'phoneNumber': user.phoneNumber,
+            'authMethod': authMethod,
+          }, SetOptions(merge: true));
+        } else {
+          await userRef.set({
+            'uid': user.uid,
+            'email': user.email,
+            'displayName': user.displayName,
+            'authMethod': authMethod,
+          }, SetOptions(merge: true));
+        }
+      } else {
+        await userRef.set({
+          'uid': user.uid,
+          'email': user.email,
+          'displayName': user.displayName,
+          'phoneNumber': user.phoneNumber,
+          'authMethod': authMethod,
+        });
+      }
     }
   }
 
@@ -111,6 +135,15 @@ class AuthService extends ChangeNotifier {
       await user.updatePassword(password);
       final userRef = _firestore.collection('users').doc(user.uid);
       await userRef.update({'password': encryptedPassword});
+      notifyListeners();
+    }
+  }
+
+  Future<void> updatePhoneNumber(String phoneNumber) async {
+    final user = _auth.currentUser;
+    if (user != null) {
+      final userRef = _firestore.collection('users').doc(user.uid);
+      await userRef.update({'phoneNumber': phoneNumber});
       notifyListeners();
     }
   }

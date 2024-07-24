@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'auth_service.dart';
 import 'theme.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ProfileScreen extends StatefulWidget {
   @override
@@ -13,12 +15,36 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
   String _message = '';
+  String _authMethod = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAuthMethod();
+  }
+
+  void _fetchAuthMethod() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      if (doc.exists) {
+        if (mounted) {
+          setState(() {
+            _authMethod = doc['authMethod'] ?? 'Unknown';
+            _phoneController.text = doc['phoneNumber'] ?? '';
+          });
+        }
+      }
+    }
+  }
 
   @override
   void dispose() {
     _nameController.dispose();
     _passwordController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
@@ -44,7 +70,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
+      body: _authMethod.isEmpty
+          ? Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -58,7 +86,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 'Email: ${user?.email ?? 'N/A'}',
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
-              if (!isGoogleUser)
+              Text(
+                'Authentication Method: ${_authMethod.capitalize()}',
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+              if (isGoogleUser) ...[
+                Text(
+                  'Name: ${user?.displayName ?? 'N/A'}',
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+              ],
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: TextField(
+                  controller: _phoneController,
+                  decoration: InputDecoration(
+                    labelText: 'Phone Number',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.phone,
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.digitsOnly,
+                  ],
+                ),
+              ),
+              if (!isGoogleUser) ...[
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
                   child: TextField(
@@ -69,7 +121,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                 ),
-              if (!isGoogleUser)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
                   child: TextField(
@@ -81,61 +132,69 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     obscureText: true,
                   ),
                 ),
-              if (!isGoogleUser)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton.icon(
-                      onPressed: () async {
-                        final name = _nameController.text.trim();
-                        final password = _passwordController.text.trim();
-                        if (name.isNotEmpty) {
-                          await authService.updateUserName(name);
-                        }
-                        if (password.isNotEmpty) {
-                          await authService.updatePassword(password);
-                        }
+              ],
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      final name = _nameController.text.trim();
+                      final password = _passwordController.text.trim();
+                      final phoneNumber = _phoneController.text.trim();
+                      if (!isGoogleUser && name.isNotEmpty) {
+                        await authService.updateUserName(name);
+                      }
+                      if (!isGoogleUser && password.isNotEmpty) {
+                        await authService.updatePassword(password);
+                      }
+                      if (phoneNumber.isNotEmpty) {
+                        await authService.updatePhoneNumber(phoneNumber);
+                      }
+                      if (mounted) {
                         setState(() {
                           _message = 'Profile updated successfully';
                         });
-                      },
-                      icon: Icon(Icons.update),
-                      label: Text('Update Profile'),
-                    ),
-                    ElevatedButton.icon(
-                      onPressed: () async {
-                        bool? confirm = await showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: Text('Delete Account'),
-                            content: Text('Are you sure you want to delete your account? All data will be erased.'),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.of(context).pop(false),
-                                child: Text('Cancel'),
-                              ),
-                              TextButton(
-                                onPressed: () => Navigator.of(context).pop(true),
-                                child: Text('Delete'),
-                              ),
-                            ],
-                          ),
-                        );
-                        if (confirm == true) {
-                          await authService.deleteUser();
+                      }
+                    },
+                    icon: Icon(Icons.update),
+                    label: Text('Update Profile'),
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      bool? confirm = await showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: Text('Delete Account'),
+                          content: Text('Are you sure you want to delete your account? All data will be erased.'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              child: Text('Delete'),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirm == true) {
+                        await authService.deleteUser();
+                        if (mounted) {
                           setState(() {
                             _message = 'Account and data deleted successfully';
                           });
                         }
-                      },
-                      icon: Icon(Icons.delete),
-                      label: Text('Delete Account'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red, // Set the background color to red for the delete button
-                      ),
+                      }
+                    },
+                    icon: Icon(Icons.delete),
+                    label: Text('Delete Account'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red, // Set the background color to red for the delete button
                     ),
-                  ],
-                ),
+                  ),
+                ],
+              ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
                 child: DropdownButtonFormField<AppTheme>(
@@ -170,5 +229,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
     );
+  }
+}
+
+extension StringExtension on String {
+  String capitalize() {
+    if (this.isEmpty) return this;
+    return "${this[0].toUpperCase()}${this.substring(1)}";
   }
 }
