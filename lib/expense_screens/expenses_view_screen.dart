@@ -22,7 +22,15 @@ class ExpensesViewScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Expenses'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.add_box_outlined),
+            onPressed: () {
+              onAddExpense();
+            },
+            tooltip: 'Log Out',
+          ),
+        ],
       ),
       body: StreamBuilder<User?>(
         stream: authService.user,
@@ -109,10 +117,6 @@ class ExpensesViewScreen extends StatelessWidget {
             },
           );
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: onAddExpense,
-        child: Icon(Icons.add),
       ),
     );
   }

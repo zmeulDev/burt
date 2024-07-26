@@ -5,6 +5,7 @@ import 'package:burt/services/car_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
@@ -25,7 +26,7 @@ class BurtCarManagerApp extends StatelessWidget {
         builder: (context, authService, _) {
           return MaterialApp(
             title: 'Burt - Car Manager',
-            theme: authService.getThemeData(authService.currentTheme),
+            theme: _buildTheme(authService.getThemeData(authService.currentTheme)),
             home: StreamBuilder<User?>(
               stream: authService.user,
               builder: (context, snapshot) {
@@ -39,6 +40,13 @@ class BurtCarManagerApp extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+
+  ThemeData _buildTheme(ThemeData base) {
+    return base.copyWith(
+      textTheme: GoogleFonts.poppinsTextTheme(base.textTheme),
+      primaryTextTheme: GoogleFonts.poppinsTextTheme(base.primaryTextTheme),
     );
   }
 }

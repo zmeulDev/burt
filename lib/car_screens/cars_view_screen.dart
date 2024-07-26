@@ -18,6 +18,17 @@ class CarsViewScreen extends StatelessWidget {
     final authService = Provider.of<AuthService>(context);
 
     return Scaffold(
+      appBar: AppBar(
+        actions: [
+          IconButton(
+            icon: Icon(Icons.add_box_outlined),
+            onPressed: () {
+              onAddCar();
+            },
+            tooltip: 'Log Out',
+          ),
+        ],
+      ),
       body: StreamBuilder<User?>(
         stream: authService.user,
         builder: (context, userSnapshot) {
@@ -72,8 +83,8 @@ class CarsViewScreen extends StatelessWidget {
                     child: Container(
                       margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey),
-                        borderRadius: BorderRadius.circular(8),
+                        color: Theme.of(context).colorScheme.onPrimary,
+                        borderRadius: BorderRadius.circular(18),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
@@ -93,7 +104,7 @@ class CarsViewScreen extends StatelessWidget {
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
-                                    color: car.status ? Colors.black : Colors.grey,
+                                    color: car.status ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.surfaceDim,
                                   ),
                                 ),
                                 SizedBox(height: 8),
@@ -101,7 +112,7 @@ class CarsViewScreen extends StatelessWidget {
                                   'Plate: ${car.carPlate}',
                                   style: TextStyle(
                                     fontSize: 16,
-                                    color: car.status ? Colors.black : Colors.grey,
+                                    color: car.status ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.surfaceDim,
                                   ),
                                 ),
                                 SizedBox(height: 8),
@@ -109,7 +120,7 @@ class CarsViewScreen extends StatelessWidget {
                                   'Status: ${car.status ? 'Active' : 'Inactive'}',
                                   style: TextStyle(
                                     fontSize: 16,
-                                    color: car.status ? Colors.green : Colors.red,
+                                    color: car.status ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.surfaceDim,
                                   ),
                                 ),
                               ],
@@ -124,10 +135,6 @@ class CarsViewScreen extends StatelessWidget {
             },
           );
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: onAddCar,
-        child: Icon(Icons.add),
       ),
     );
   }

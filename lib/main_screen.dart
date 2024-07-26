@@ -3,6 +3,7 @@ import 'package:burt/car_screens/car_details_screen.dart';
 import 'package:burt/expense_screens/expense_add_screen.dart';
 import 'package:burt/expense_screens/expense_details_screen.dart';
 import 'package:burt/expense_screens/expenses_view_screen.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'profile_screen.dart';
@@ -31,19 +32,7 @@ class _MainScreenState extends State<MainScreen> {
     final authService = Provider.of<AuthService>(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Burt - Car Manager'),
-        actions: _selectedIndex == 2
-            ? [
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: () {
-              authService.signOut();
-            },
-          )
-        ]
-            : null,
-      ),
+      extendBody: true,
       body: PageView(
         controller: _pageController,
         onPageChanged: (index) {
@@ -92,31 +81,47 @@ class _MainScreenState extends State<MainScreen> {
           ProfileScreen(),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
+      bottomNavigationBar: Container(
+        margin: EdgeInsets.only(top: 0, left: 16, right: 16),
+        decoration: BoxDecoration(
+          color: Colors.orange,
+          borderRadius: BorderRadius.only(
+              topRight: Radius.circular(30), topLeft: Radius.circular(30)),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(18.0),
+            topRight: Radius.circular(18.0),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.directions_car),
-            label: 'Cars',
+          child: BottomNavigationBar(
+            items: const <BottomNavigationBarItem>[
+              BottomNavigationBarItem(
+                icon: Icon(Icons.menu_outlined),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.directions_car_outlined),
+                label: 'Cars',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.attach_money_outlined),
+                label: 'Expenses',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person_2_outlined),
+                label: 'Profile',
+              ),
+            ],
+            currentIndex: _selectedIndex,
+            selectedItemColor: Theme.of(context).colorScheme.onPrimary,
+            unselectedItemColor: Theme.of(context).colorScheme.onTertiary,
+            backgroundColor: Theme.of(context).colorScheme.scrim,
+            onTap: _onItemTapped,
+            type: BottomNavigationBarType.fixed,
+            elevation: 0,
+            showUnselectedLabels: false,
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.attach_money),
-            label: 'Expenses',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.amber[800],
-        unselectedItemColor: Colors.grey,
-        onTap: _onItemTapped,
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        showUnselectedLabels: true,
+        ),
       ),
     );
   }

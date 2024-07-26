@@ -6,7 +6,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Burt - Car Manager'),
+        title: Text('Welcome'),
         actions: [
           Padding(
             padding: const EdgeInsets.all(8.0),
