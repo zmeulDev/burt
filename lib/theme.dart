@@ -1,5 +1,7 @@
 import "package:flutter/material.dart";
 
+// #C1CE73 for illustrations
+
 class MaterialTheme {
   final TextTheme textTheme;
 
@@ -392,9 +394,5 @@ class ColorFamily {
 enum AppTheme {
   Light,
   Dark,
-  LightMediumContrast,
-  LightHighContrast,
-  DarkMediumContrast,
-  DarkHighContrast,
 }
 

@@ -17,7 +17,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
-  String _message = '';
   String _authMethod = '';
 
   @override
@@ -49,6 +48,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.dispose();
   }
 
+  Future<void> _showMessage(String message, {Color color = Colors.green}) async {
+    if (!mounted) return;
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: color,
+          content: Text(
+            message,
+            style: TextStyle(color: Colors.white),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text(
+                'OK',
+                style: TextStyle(color: Colors.white),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context);
@@ -59,12 +85,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final bool isGoogleUser = user != null && authService.isGoogleUser(user);
 
     return Scaffold(
-
       body: _authMethod.isEmpty
           ? Center(child: CircularProgressIndicator())
           : SafeArea(
-            child: Stack(
-                    children: [
+        child: Stack(
+          children: [
             SingleChildScrollView(
               child: Column(
                 children: [
@@ -79,19 +104,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     margin: const EdgeInsets.symmetric(horizontal: 16.0),
                     padding: const EdgeInsets.all(16.0),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.surfaceContainerLow,
                       borderRadius: BorderRadius.circular(12.0),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Email: ${user?.email ?? 'N/A'}',
-                          style: Theme.of(context).textTheme.bodyLarge,
+                        Row(
+                          children: [
+                            Icon(Icons.email, color: Theme.of(context).colorScheme.onSurface),
+                            SizedBox(width: 8.0),
+                            Text(
+                              user?.email ?? 'N/A',
+                              style: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                          ],
                         ),
-                        Text(
-                          'Authentication Method: ${_authMethod.capitalize()}',
-                          style: Theme.of(context).textTheme.bodyLarge,
+                        SizedBox(height: 8.0),
+                        Row(
+                          children: [
+                            Icon(Icons.security, color: Theme.of(context).colorScheme.onSurface),
+                            SizedBox(width: 8.0),
+                            Text(
+                              _authMethod.capitalize(),
+                              style: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -119,6 +157,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               decoration: InputDecoration(
                                 labelText: 'Name',
                                 border: OutlineInputBorder(),
+                                prefixIcon: Icon(Icons.person),
                               ),
                             ),
                           ),
@@ -129,6 +168,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             decoration: InputDecoration(
                               labelText: 'Phone Number',
                               border: OutlineInputBorder(),
+                              prefixIcon: Icon(Icons.phone),
                             ),
                             keyboardType: TextInputType.phone,
                             inputFormatters: <TextInputFormatter>[
@@ -144,6 +184,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               decoration: InputDecoration(
                                 labelText: 'New Password',
                                 border: OutlineInputBorder(),
+                                prefixIcon: Icon(Icons.lock),
                               ),
                               obscureText: true,
                             ),
@@ -160,6 +201,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             decoration: InputDecoration(
                               labelText: 'Select Theme',
                               border: OutlineInputBorder(),
+                              prefixIcon: Icon(Icons.palette),
                             ),
                             items: AppTheme.values.map((AppTheme theme) {
                               return DropdownMenuItem(
@@ -169,14 +211,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             }).toList(),
                           ),
                         ),
-                        if (_message.isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              _message,
-                              style: TextStyle(color: Colors.green),
-                            ),
-                          ),
                       ],
                     ),
                   ),
@@ -187,23 +221,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       IconButton(
                         icon: Icon(Icons.save_outlined),
                         onPressed: () async {
-                          final name = _nameController.text.trim();
-                          final password = _passwordController.text.trim();
-                          final phoneNumber = _phoneController.text.trim();
-                          if (!isGoogleUser && name.isNotEmpty) {
-                            await authService.updateUserName(name);
+                          bool updateSuccess = true;
+                          try {
+                            final name = _nameController.text.trim();
+                            final password = _passwordController.text.trim();
+                            final phoneNumber = _phoneController.text.trim();
+                            if (!isGoogleUser && name.isNotEmpty) {
+                              await authService.updateUserName(name);
+                            }
+                            if (!isGoogleUser && password.isNotEmpty) {
+                              await authService.updatePassword(password);
+                            }
+                            if (phoneNumber.isNotEmpty) {
+                              await authService.updatePhoneNumber(phoneNumber);
+                            }
+                          } catch (e) {
+                            updateSuccess = false;
                           }
-                          if (!isGoogleUser && password.isNotEmpty) {
-                            await authService.updatePassword(password);
-                          }
-                          if (phoneNumber.isNotEmpty) {
-                            await authService.updatePhoneNumber(phoneNumber);
-                          }
-                          if (mounted) {
-                            setState(() {
-                              _message = 'Profile updated successfully';
-                            });
-                          }
+                          _showMessage(updateSuccess ? 'Profile updated successfully' : 'Failed to update profile',
+                              color: updateSuccess ? Colors.green : Colors.red);
                         },
                         tooltip: 'Update Profile',
                       ),
@@ -230,9 +266,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           if (confirm == true) {
                             await authService.deleteUser();
                             if (mounted) {
-                              setState(() {
-                                _message = 'Account and data deleted successfully';
-                              });
+                              _showMessage('Account and data deleted successfully');
                             }
                           }
                         },
@@ -251,9 +285,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
             ),
-                    ],
-                  ),
-          ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -22,14 +22,6 @@ class AuthService extends ChangeNotifier {
         return MaterialTheme(ThemeData().textTheme).light();
       case AppTheme.Dark:
         return MaterialTheme(ThemeData().textTheme).dark();
-      case AppTheme.LightMediumContrast:
-        return MaterialTheme(ThemeData().textTheme).lightMediumContrast();
-      case AppTheme.LightHighContrast:
-        return MaterialTheme(ThemeData().textTheme).lightHighContrast();
-      case AppTheme.DarkMediumContrast:
-        return MaterialTheme(ThemeData().textTheme).darkMediumContrast();
-      case AppTheme.DarkHighContrast:
-        return MaterialTheme(ThemeData().textTheme).darkHighContrast();
       default:
         return MaterialTheme(ThemeData().textTheme).light();
     }
