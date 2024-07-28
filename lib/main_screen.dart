@@ -3,13 +3,14 @@ import 'package:burt/car_screens/car_details_screen.dart';
 import 'package:burt/expense_screens/expense_add_screen.dart';
 import 'package:burt/expense_screens/expense_details_screen.dart';
 import 'package:burt/expense_screens/expenses_view_screen.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:provider/provider.dart';
+
+import 'auth_service.dart';
+import 'car_screens/cars_view_screen.dart';
 import 'home_screen.dart';
 import 'profile_screen.dart';
-import 'car_screens/cars_view_screen.dart';
-import 'auth_service.dart';
-import 'package:provider/provider.dart';
 
 class MainScreen extends StatefulWidget {
   @override
@@ -65,7 +66,8 @@ class _MainScreenState extends State<MainScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ExpenseDetailsScreen(expenseId: expenseId),
+                  builder: (context) =>
+                      ExpenseDetailsScreen(expenseId: expenseId),
                 ),
               );
             },
@@ -96,19 +98,19 @@ class _MainScreenState extends State<MainScreen> {
           child: BottomNavigationBar(
             items: const <BottomNavigationBarItem>[
               BottomNavigationBarItem(
-                icon: Icon(Icons.menu_outlined),
+                icon: Icon(Iconsax.home_1_copy),
                 label: 'Home',
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.directions_car_outlined),
+                icon: Icon(Iconsax.car_copy),
                 label: 'Cars',
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.attach_money_outlined),
+                icon: Icon(Iconsax.chart_1_copy),
                 label: 'Expenses',
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.person_2_outlined),
+                icon: Icon(Iconsax.user_copy),
                 label: 'Profile',
               ),
             ],

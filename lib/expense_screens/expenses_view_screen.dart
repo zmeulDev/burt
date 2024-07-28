@@ -22,6 +22,7 @@ class ExpensesViewScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        title: Text("my expenses"),
         actions: [
           IconButton(
             icon: Icon(Icons.add_box_outlined),
