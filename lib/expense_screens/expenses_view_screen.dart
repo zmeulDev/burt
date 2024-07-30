@@ -5,15 +5,16 @@ import 'package:burt/services/car_service.dart';
 import 'package:burt/services/expense_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class ExpensesViewScreen extends StatelessWidget {
   final Function(String) onExpenseSelected;
   final VoidCallback onAddExpense;
 
-  ExpensesViewScreen({required this.onExpenseSelected, required this.onAddExpense});
+  ExpensesViewScreen(
+      {required this.onExpenseSelected, required this.onAddExpense});
 
   @override
   Widget build(BuildContext context) {
@@ -58,6 +59,12 @@ class ExpensesViewScreen extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      Image.asset(
+                        'assets/illustrations/other.png',
+                        height: 300,
+                        fit: BoxFit.cover,
+                      ),
+                      SizedBox(height: 16),
                       Text(
                         'No expenses found',
                         style: TextStyle(fontSize: 20),
@@ -80,18 +87,22 @@ class ExpensesViewScreen extends StatelessWidget {
                   return FutureBuilder<Car?>(
                     future: carService.getCarById(expense.carId),
                     builder: (context, carSnapshot) {
-                      if (carSnapshot.connectionState == ConnectionState.waiting) {
+                      if (carSnapshot.connectionState ==
+                          ConnectionState.waiting) {
                         return Center(child: CircularProgressIndicator());
                       }
 
                       final car = carSnapshot.data;
-                      final formattedDate = DateFormat('yyyy-MM-dd').format(expense.date);
+                      final formattedDate =
+                          DateFormat('yyyy-MM-dd').format(expense.date);
 
                       return Card(
-                        margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                        margin:
+                            EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(color: Theme.of(context).colorScheme.outline),
+                          side: BorderSide(
+                              color: Theme.of(context).colorScheme.outline),
                         ),
                         child: ListTile(
                           leading: SvgPicture.asset(
@@ -99,7 +110,8 @@ class ExpensesViewScreen extends StatelessWidget {
                             width: 90,
                             height: 90,
                           ),
-                          title: Text('Car Plate: ${car?.carPlate ?? 'Unknown'}'),
+                          title:
+                              Text('Car Plate: ${car?.carPlate ?? 'Unknown'}'),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -135,5 +147,3 @@ class ExpensesViewScreen extends StatelessWidget {
     }
   }
 }
-
-

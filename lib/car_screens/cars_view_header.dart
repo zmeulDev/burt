@@ -17,9 +17,19 @@ class CarsViewHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverAppBar(
-      expandedHeight: 220.0,
+      expandedHeight: 200.0,
       floating: true,
       pinned: true,
+      actions: [
+        IconButton(
+          icon: Icon(Iconsax.add_square_copy),
+          color: Theme.of(context).colorScheme.onPrimary,
+          onPressed: () {
+            onAddCar();
+          },
+          tooltip: 'Add Car',
+        ),
+      ],
       flexibleSpace: FlexibleSpaceBar(
         title: Text(
           "Garage",
@@ -51,14 +61,6 @@ class CarsViewHeader extends StatelessWidget {
           ),
         ),
       ),
-      actions: [
-        IconButton(
-          icon: Icon(Iconsax.add_square_copy),
-          onPressed: onAddCar,
-          tooltip: 'Add car',
-          color: Theme.of(context).colorScheme.onPrimary,
-        ),
-      ],
     );
   }
 

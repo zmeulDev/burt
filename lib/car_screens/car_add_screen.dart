@@ -12,23 +12,78 @@ class CarAddScreen extends StatefulWidget {
 
 class _CarAddScreenState extends State<CarAddScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _car = Car(
-    id: '',
-    maker: '',
-    model: '',
-    year: 0,
-    carPlate: '',
-    vinNumber: '',
-    engineSize: 0,
-    enginePower: 0,
-    color: '',
-    fuelType: 'Petrol',
-    transmission: 'Manual',
-    tireSize: '',
-    wiperSize: '',
-    lightsType: '',
-    status: true,
-  );
+  int _currentStep = 0;
+
+  final _makerController = TextEditingController();
+  final _modelController = TextEditingController();
+  final _yearController = TextEditingController();
+  final _carPlateController = TextEditingController();
+
+  final _vinController = TextEditingController();
+  final _colorController = TextEditingController();
+  final _tireSizeController = TextEditingController();
+  final _wiperSizeController = TextEditingController();
+  final _lightsTypeController = TextEditingController();
+
+  final _engineSizeController = TextEditingController();
+  final _enginePowerController = TextEditingController();
+  String _fuelType = 'Petrol';
+  String _transmission = 'Manual';
+  bool _status = true;
+
+  void _onStepContinue() {
+    if (_formKey.currentState!.validate()) {
+      if (_currentStep < 2) {
+        setState(() {
+          _currentStep += 1;
+        });
+      } else {
+        _formKey.currentState!.save();
+        final car = Car(
+          id: '',
+          maker:
+              _makerController.text.isNotEmpty ? _makerController.text : 'N/A',
+          model: _modelController.text,
+          year: int.tryParse(_yearController.text) ?? 0,
+          carPlate: _carPlateController.text,
+          vinNumber:
+              _vinController.text.isNotEmpty ? _vinController.text : 'N/A',
+          engineSize: int.tryParse(_engineSizeController.text) ?? 0,
+          enginePower: int.tryParse(_enginePowerController.text) ?? 0,
+          color:
+              _colorController.text.isNotEmpty ? _colorController.text : 'N/A',
+          fuelType: _fuelType,
+          transmission: _transmission,
+          tireSize: _tireSizeController.text.isNotEmpty
+              ? _tireSizeController.text
+              : 'N/A',
+          wiperSize: _wiperSizeController.text.isNotEmpty
+              ? _wiperSizeController.text
+              : 'N/A',
+          lightsType: _lightsTypeController.text.isNotEmpty
+              ? _lightsTypeController.text
+              : 'N/A',
+          status: _status,
+        );
+
+        final user = Provider.of<AuthService>(context, listen: false).user;
+        user.first.then((currentUser) {
+          CarService().addCar(car, currentUser!.uid);
+          Navigator.pop(context);
+        });
+      }
+    }
+  }
+
+  void _onStepCancel() {
+    if (_currentStep > 0) {
+      setState(() {
+        _currentStep -= 1;
+      });
+    } else {
+      Navigator.pop(context);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,138 +104,207 @@ class _CarAddScreenState extends State<CarAddScreen> {
             return Center(child: Text('No user logged in'));
           }
 
-          final userId = userSnapshot.data!.uid;
-
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: Form(
               key: _formKey,
-              child: ListView(
-                children: [
-                  TextFormField(
-                    decoration: InputDecoration(labelText: 'Maker'),
-                    textCapitalization: TextCapitalization.words,
-                    onSaved: (value) => _car.maker = value!.isNotEmpty ? value : 'N/A',
+              child: Stepper(
+                currentStep: _currentStep,
+                onStepContinue: _onStepContinue,
+                onStepCancel: _onStepCancel,
+                controlsBuilder:
+                    (BuildContext context, ControlsDetails controls) {
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      if (_currentStep != 0)
+                        ElevatedButton(
+                          onPressed: controls.onStepCancel,
+                          child: Text('Back'),
+                        ),
+                      ElevatedButton(
+                        onPressed: controls.onStepContinue,
+                        child: Text(
+                          _currentStep == 2 ? 'Finish' : 'Continue',
+                        ),
+                      ),
+                    ],
+                  );
+                },
+                steps: [
+                  Step(
+                    title: Text('Basic Information'),
+                    content: Column(
+                      children: [
+                        _buildTextField(
+                          label: 'Maker',
+                          controller: _makerController,
+                          textCapitalization: TextCapitalization.words,
+                        ),
+                        _buildTextField(
+                          label: 'Model *',
+                          controller: _modelController,
+                          textCapitalization: TextCapitalization.words,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter the model';
+                            }
+                            return null;
+                          },
+                        ),
+                        _buildTextField(
+                          label: 'Year',
+                          controller: _yearController,
+                          keyboardType: TextInputType.number,
+                        ),
+                        _buildTextField(
+                          label: 'Car Plate *',
+                          controller: _carPlateController,
+                          textCapitalization: TextCapitalization.characters,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter the car plate';
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
+                    isActive: _currentStep >= 0,
+                    state: _currentStep >= 0
+                        ? StepState.complete
+                        : StepState.disabled,
                   ),
-                  TextFormField(
-                    decoration: InputDecoration(labelText: 'Model *'),
-                    textCapitalization: TextCapitalization.words,
-                    onSaved: (value) => _car.model = value!,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter the model';
-                      }
-                      return null;
-                    },
+                  Step(
+                    title: Text('Additional Details'),
+                    content: Column(
+                      children: [
+                        _buildTextField(
+                          label: 'VIN Number',
+                          controller: _vinController,
+                          textCapitalization: TextCapitalization.characters,
+                        ),
+                        _buildTextField(
+                          label: 'Color',
+                          controller: _colorController,
+                          textCapitalization: TextCapitalization.words,
+                        ),
+                        _buildTextField(
+                          label: 'Tire Size',
+                          controller: _tireSizeController,
+                          textCapitalization: TextCapitalization.words,
+                        ),
+                        _buildTextField(
+                          label: 'Wiper Size',
+                          controller: _wiperSizeController,
+                          textCapitalization: TextCapitalization.words,
+                        ),
+                        _buildTextField(
+                          label: 'Lights Type',
+                          controller: _lightsTypeController,
+                          textCapitalization: TextCapitalization.words,
+                        ),
+                      ],
+                    ),
+                    isActive: _currentStep >= 1,
+                    state: _currentStep >= 1
+                        ? StepState.complete
+                        : StepState.disabled,
                   ),
-                  TextFormField(
-                    decoration: InputDecoration(labelText: 'Year'),
-                    keyboardType: TextInputType.number,
-                    onSaved: (value) => _car.year = int.tryParse(value!) ?? 0,
-                  ),
-                  TextFormField(
-                    decoration: InputDecoration(labelText: 'Car Plate *'),
-                    textCapitalization: TextCapitalization.characters,
-                    onSaved: (value) => _car.carPlate = value!,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter the car plate';
-                      }
-                      return null;
-                    },
-                  ),
-                  TextFormField(
-                    decoration: InputDecoration(labelText: 'VIN Number'),
-                    textCapitalization: TextCapitalization.characters,
-                    onSaved: (value) => _car.vinNumber = value!.isNotEmpty ? value : 'N/A',
-                  ),
-                  TextFormField(
-                    decoration: InputDecoration(labelText: 'Engine Size'),
-                    keyboardType: TextInputType.number,
-                    onSaved: (value) => _car.engineSize = int.tryParse(value!) ?? 0,
-                  ),
-                  TextFormField(
-                    decoration: InputDecoration(labelText: 'Engine Power'),
-                    keyboardType: TextInputType.number,
-                    onSaved: (value) => _car.enginePower = int.tryParse(value!) ?? 0,
-                  ),
-                  TextFormField(
-                    decoration: InputDecoration(labelText: 'Color'),
-                    textCapitalization: TextCapitalization.words,
-                    onSaved: (value) => _car.color = value!.isNotEmpty ? value : 'N/A',
-                  ),
-                  DropdownButtonFormField<String>(
-                    decoration: InputDecoration(labelText: 'Fuel Type'),
-                    value: _car.fuelType,
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _car.fuelType = newValue!;
-                      });
-                    },
-                    items: ['Petrol', 'Diesel', 'Hybrid', 'Electric', 'Other']
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                  ),
-                  DropdownButtonFormField<String>(
-                    decoration: InputDecoration(labelText: 'Transmission'),
-                    value: _car.transmission,
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _car.transmission = newValue!;
-                      });
-                    },
-                    items: ['Manual', 'Automatic', 'Other']
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                  ),
-                  TextFormField(
-                    decoration: InputDecoration(labelText: 'Tire Size'),
-                    textCapitalization: TextCapitalization.words,
-                    onSaved: (value) => _car.tireSize = value!.isNotEmpty ? value : 'N/A',
-                  ),
-                  TextFormField(
-                    decoration: InputDecoration(labelText: 'Wiper Size'),
-                    textCapitalization: TextCapitalization.words,
-                    onSaved: (value) => _car.wiperSize = value!.isNotEmpty ? value : 'N/A',
-                  ),
-                  TextFormField(
-                    decoration: InputDecoration(labelText: 'Lights Type'),
-                    textCapitalization: TextCapitalization.words,
-                    onSaved: (value) => _car.lightsType = value!.isNotEmpty ? value : 'N/A',
-                  ),
-                  SwitchListTile(
-                    title: Text('Status'),
-                    value: _car.status,
-                    onChanged: (bool value) {
-                      setState(() {
-                        _car.status = value;
-                      });
-                    },
-                  ),
-                  SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () async {
-                      if (_formKey.currentState!.validate()) {
-                        _formKey.currentState!.save();
-                        await CarService().addCar(_car, userId);
-                        Navigator.pop(context);
-                      }
-                    },
-                    child: Text('Add Car'),
+                  Step(
+                    title: Text('Engine'),
+                    content: Column(
+                      children: [
+                        _buildTextField(
+                          label: 'Engine Size',
+                          controller: _engineSizeController,
+                          keyboardType: TextInputType.number,
+                        ),
+                        _buildTextField(
+                          label: 'Engine Power',
+                          controller: _enginePowerController,
+                          keyboardType: TextInputType.number,
+                        ),
+                        DropdownButtonFormField<String>(
+                          decoration: InputDecoration(labelText: 'Fuel Type'),
+                          value: _fuelType,
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              _fuelType = newValue!;
+                            });
+                          },
+                          items: [
+                            'Petrol',
+                            'Diesel',
+                            'Hybrid',
+                            'Electric',
+                            'Other'
+                          ].map<DropdownMenuItem<String>>((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            );
+                          }).toList(),
+                        ),
+                        DropdownButtonFormField<String>(
+                          decoration:
+                              InputDecoration(labelText: 'Transmission'),
+                          value: _transmission,
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              _transmission = newValue!;
+                            });
+                          },
+                          items: ['Manual', 'Automatic', 'Other']
+                              .map<DropdownMenuItem<String>>((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            );
+                          }).toList(),
+                        ),
+                        SwitchListTile(
+                          title: Text('Status'),
+                          value: _status,
+                          onChanged: (bool value) {
+                            setState(() {
+                              _status = value;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    isActive: _currentStep >= 2,
+                    state: _currentStep >= 2
+                        ? StepState.complete
+                        : StepState.disabled,
                   ),
                 ],
               ),
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required String label,
+    required TextEditingController controller,
+    TextInputType keyboardType = TextInputType.text,
+    TextCapitalization textCapitalization = TextCapitalization.none,
+    String? Function(String?)? validator,
+    void Function(String?)? onSaved,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: TextFormField(
+        decoration: InputDecoration(labelText: label),
+        controller: controller,
+        keyboardType: keyboardType,
+        textCapitalization: textCapitalization,
+        validator: validator,
+        onSaved: onSaved,
       ),
     );
   }

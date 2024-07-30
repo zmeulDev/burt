@@ -3,7 +3,6 @@ import 'package:burt/models/car_model.dart';
 import 'package:burt/services/car_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:provider/provider.dart';
 
@@ -45,13 +44,14 @@ class CarsViewScreen extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SvgPicture.asset(
-                        'assets/illustrations/no_cars.svg',
-                        height: 200,
+                      Image.asset(
+                        'assets/illustrations/other.png',
+                        height: 300,
+                        fit: BoxFit.cover,
                       ),
                       SizedBox(height: 16),
                       Text(
-                        'No cars found',
+                        'You have no cars stored.',
                         style: TextStyle(fontSize: 20),
                       ),
                       SizedBox(height: 16),
@@ -96,14 +96,14 @@ class CarsViewScreen extends StatelessWidget {
                                   children: [
                                     Container(
                                       width: double.infinity,
-                                      height: 150,
+                                      height: 200,
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.vertical(
                                             top: Radius.circular(20.0)),
-                                        child: SvgPicture.asset(
+                                        child: Image.asset(
                                           car.status
-                                              ? 'assets/illustrations/cars_active.svg'
-                                              : 'assets/illustrations/cars_inactive.svg',
+                                              ? 'assets/illustrations/cars_active.png'
+                                              : 'assets/illustrations/cars_inactive.png',
                                           fit: BoxFit.cover,
                                         ),
                                       ),
