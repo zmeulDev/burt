@@ -1,12 +1,11 @@
 import 'package:burt/auth_service.dart';
 import 'package:burt/models/car_model.dart';
 import 'package:burt/services/car_service.dart';
+import 'package:burt/widgets/cars_view_card.dart';
+import 'package:burt/widgets/cars_view_header.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:provider/provider.dart';
-
-import 'cars_view_header.dart';
 
 class CarsViewScreen extends StatelessWidget {
   final Function(String) onCarSelected;
@@ -81,90 +80,12 @@ class CarsViewScreen extends StatelessWidget {
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
                         final car = cars[index];
-                        return GestureDetector(
-                          onTap: () => onCarSelected(car.id),
-                          child: Card(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20.0),
-                            ),
-                            margin: EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Stack(
-                                  children: [
-                                    Container(
-                                      width: double.infinity,
-                                      height: 200,
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.vertical(
-                                            top: Radius.circular(20.0)),
-                                        child: Image.asset(
-                                          car.status
-                                              ? 'assets/illustrations/cars_active.png'
-                                              : 'assets/illustrations/cars_inactive.png',
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    ),
-                                    Positioned(
-                                      top: 8.0,
-                                      right: 8.0,
-                                      child: CircleAvatar(
-                                        backgroundColor: Colors.white,
-                                        child: Icon(
-                                          car.status
-                                              ? Iconsax.tick_circle
-                                              : Iconsax.close_circle,
-                                          color: car.status
-                                              ? Colors.green
-                                              : Colors.red,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.all(16.0),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        car.model,
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 18.0,
-                                        ),
-                                      ),
-                                      Text(
-                                        'Plate: ${car.carPlate}',
-                                        style: TextStyle(
-                                          color: Colors.grey[600],
-                                        ),
-                                      ),
-                                      SizedBox(height: 8.0),
-                                      Align(
-                                        alignment: Alignment.bottomRight,
-                                        child: CircleAvatar(
-                                          backgroundColor: Colors.black,
-                                          child: IconButton(
-                                            icon: Icon(
-                                              Icons.arrow_forward,
-                                              color: Colors.white,
-                                            ),
-                                            onPressed: () =>
-                                                onCarSelected(car.id),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                        return CarsViewCard(
+                          model: car.model,
+                          carPlate: car.carPlate,
+                          status: car.status,
+                          carId: car.id,
+                          onCarSelected: onCarSelected,
                         );
                       },
                       childCount: cars.length,

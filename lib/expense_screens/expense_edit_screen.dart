@@ -255,7 +255,7 @@ class _ExpenseEditScreenState extends State<ExpenseEditScreen> {
         ),
         _buildTextField(
           label: 'Tax Cost',
-          initialValue: _expense.details['cost'].toString(),
+          initialValue: _expense.details['cost']?.toString(),
           keyboardType: TextInputType.number,
           validator: (value) {
             if (value == null || value.isEmpty) {
@@ -266,7 +266,12 @@ class _ExpenseEditScreenState extends State<ExpenseEditScreen> {
             }
             return null;
           },
-          onChanged: (value) => _expense.cost = int.parse(value ?? '0'),
+          onChanged: (value) {
+            setState(() {
+              _expense.cost = int.tryParse(value) ?? 0;
+              _expense.details['cost'] = value;
+            });
+          },
         ),
         _buildDateField(
           label: 'Valid From',
@@ -326,7 +331,7 @@ class _ExpenseEditScreenState extends State<ExpenseEditScreen> {
         ),
         _buildTextField(
           label: 'Service Cost',
-          initialValue: _expense.details['cost'].toString(),
+          initialValue: _expense.details['cost']?.toString(),
           keyboardType: TextInputType.number,
           validator: (value) {
             if (value == null || value.isEmpty) {
@@ -337,7 +342,12 @@ class _ExpenseEditScreenState extends State<ExpenseEditScreen> {
             }
             return null;
           },
-          onChanged: (value) => _expense.cost = int.parse(value ?? '0'),
+          onChanged: (value) {
+            setState(() {
+              _expense.cost = int.tryParse(value) ?? 0;
+              _expense.details['cost'] = value;
+            });
+          },
         ),
         _buildTextField(
           label: 'Service Details',
@@ -385,7 +395,7 @@ class _ExpenseEditScreenState extends State<ExpenseEditScreen> {
         ),
         _buildTextField(
           label: 'Other Cost',
-          initialValue: _expense.details['cost'].toString(),
+          initialValue: _expense.details['cost']?.toString(),
           keyboardType: TextInputType.number,
           validator: (value) {
             if (value == null || value.isEmpty) {
@@ -396,7 +406,12 @@ class _ExpenseEditScreenState extends State<ExpenseEditScreen> {
             }
             return null;
           },
-          onChanged: (value) => _expense.cost = int.parse(value ?? '0'),
+          onChanged: (value) {
+            setState(() {
+              _expense.cost = int.tryParse(value) ?? 0;
+              _expense.details['cost'] = value;
+            });
+          },
         ),
         _buildTextField(
           label: 'Other Details',
