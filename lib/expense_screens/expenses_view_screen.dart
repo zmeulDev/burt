@@ -3,10 +3,9 @@ import 'package:burt/models/car_model.dart';
 import 'package:burt/models/expense_model.dart';
 import 'package:burt/services/car_service.dart';
 import 'package:burt/services/expense_service.dart';
+import 'package:burt/widgets/expenses_view_card.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class ExpensesViewScreen extends StatelessWidget {
@@ -30,7 +29,7 @@ class ExpensesViewScreen extends StatelessWidget {
             onPressed: () {
               onAddExpense();
             },
-            tooltip: 'Log Out',
+            tooltip: 'Add Expense',
           ),
         ],
       ),
@@ -61,15 +60,15 @@ class ExpensesViewScreen extends StatelessWidget {
                     children: [
                       Image.asset(
                         'assets/illustrations/other.png',
-                        height: 300,
+                        height: 200,
                         fit: BoxFit.cover,
                       ),
-                      SizedBox(height: 16),
+                      SizedBox(height: 8),
                       Text(
                         'No expenses found',
-                        style: TextStyle(fontSize: 20),
+                        style: TextStyle(fontSize: 16),
                       ),
-                      SizedBox(height: 16),
+                      SizedBox(height: 8),
                       ElevatedButton(
                         onPressed: onAddExpense,
                         child: Text('Add an Expense'),
@@ -93,35 +92,10 @@ class ExpensesViewScreen extends StatelessWidget {
                       }
 
                       final car = carSnapshot.data;
-                      final formattedDate =
-                          DateFormat('yyyy-MM-dd').format(expense.date);
-
-                      return Card(
-                        margin:
-                            EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(
-                              color: Theme.of(context).colorScheme.outline),
-                        ),
-                        child: ListTile(
-                          leading: SvgPicture.asset(
-                            _getImageForExpenseType(expense.type),
-                            width: 90,
-                            height: 90,
-                          ),
-                          title:
-                              Text('Car Plate: ${car?.carPlate ?? 'Unknown'}'),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Type: ${expense.type}'),
-                              Text('Date: $formattedDate'),
-                              Text('Cost: \$${expense.cost.toString()}'),
-                            ],
-                          ),
-                          onTap: () => onExpenseSelected(expense.id),
-                        ),
+                      return ExpensesViewCard(
+                        expense: expense,
+                        car: car,
+                        onExpenseSelected: onExpenseSelected,
                       );
                     },
                   );
@@ -132,18 +106,5 @@ class ExpensesViewScreen extends StatelessWidget {
         },
       ),
     );
-  }
-
-  String _getImageForExpenseType(String type) {
-    switch (type) {
-      case 'Tax':
-        return 'assets/illustrations/tax.svg';
-      case 'Service':
-        return 'assets/illustrations/service.svg';
-      case 'Other':
-        return 'assets/illustrations/other.svg';
-      default:
-        return 'assets/illustrations/default.svg';
-    }
   }
 }

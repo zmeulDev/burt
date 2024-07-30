@@ -138,22 +138,10 @@ class CarsViewScreen extends StatelessWidget {
                                           fontSize: 18.0,
                                         ),
                                       ),
-                                      SizedBox(height: 8.0),
                                       Text(
                                         'Plate: ${car.carPlate}',
                                         style: TextStyle(
                                           color: Colors.grey[600],
-                                        ),
-                                      ),
-                                      SizedBox(height: 16.0),
-                                      Text(
-                                        car.status ? 'Active' : 'Inactive',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16.0,
-                                          color: car.status
-                                              ? Colors.green
-                                              : Colors.red,
                                         ),
                                       ),
                                       SizedBox(height: 8.0),

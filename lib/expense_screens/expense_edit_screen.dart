@@ -3,6 +3,7 @@ import 'package:burt/models/expense_model.dart';
 import 'package:burt/services/car_service.dart';
 import 'package:burt/services/expense_service.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class ExpenseEditScreen extends StatefulWidget {
   final String expenseId;
@@ -19,11 +20,26 @@ class _ExpenseEditScreenState extends State<ExpenseEditScreen> {
   bool _loading = true;
   late List<Car> _cars;
   String? _selectedCarId;
+  int _currentStep = 0;
+
+  // Controllers to preserve input data
+  final _taxValidFromController = TextEditingController();
+  final _taxValidToController = TextEditingController();
+  final _serviceDateController = TextEditingController();
+  final _serviceReminderController = TextEditingController();
+  final _otherDateController = TextEditingController();
+  final _otherReminderController = TextEditingController();
 
   @override
-  void initState() {
-    super.initState();
-    _loadExpense();
+  void dispose() {
+    // Dispose controllers when the widget is disposed
+    _taxValidFromController.dispose();
+    _taxValidToController.dispose();
+    _serviceDateController.dispose();
+    _serviceReminderController.dispose();
+    _otherDateController.dispose();
+    _otherReminderController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadExpense() async {
@@ -33,8 +49,72 @@ class _ExpenseEditScreenState extends State<ExpenseEditScreen> {
       _expense = expense;
       _cars = cars;
       _selectedCarId = expense.carId;
+      _taxValidFromController.text = _expense.details['taxValidFrom'] ?? '';
+      _taxValidToController.text = _expense.details['taxValidTo'] ?? '';
+      _serviceDateController.text = _expense.details['serviceDate'] ?? '';
+      _serviceReminderController.text =
+          _expense.details['serviceReminder'] ?? '';
+      _otherDateController.text = _expense.details['otherDate'] ?? '';
+      _otherReminderController.text = _expense.details['otherReminder'] ?? '';
       _loading = false;
     });
+  }
+
+  Future<void> _selectDate(BuildContext context,
+      TextEditingController controller, String key) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null) {
+      setState(() {
+        _expense.details[key] = DateFormat('yyyy-MM-dd').format(picked);
+        controller.text = _expense.details[key];
+      });
+    }
+  }
+
+  void _onStepContinue() {
+    if (_currentStep == 0) {
+      if (_selectedCarId == null || _expense.type.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Please select a car and type')),
+        );
+        return;
+      }
+    }
+
+    if (_currentStep < 2) {
+      setState(() {
+        _currentStep += 1;
+      });
+    } else {
+      if (_formKey.currentState!.validate()) {
+        _formKey.currentState!.save();
+        _expense.carId = _selectedCarId!;
+        ExpenseService().updateExpense(_expense).then((_) {
+          Navigator.pop(context);
+        });
+      }
+    }
+  }
+
+  void _onStepCancel() {
+    if (_currentStep > 0) {
+      setState(() {
+        _currentStep -= 1;
+      });
+    } else {
+      Navigator.pop(context);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadExpense();
   }
 
   @override
@@ -46,61 +126,106 @@ class _ExpenseEditScreenState extends State<ExpenseEditScreen> {
       body: _loading
           ? Center(child: CircularProgressIndicator())
           : Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              DropdownButtonFormField<String>(
-                decoration: InputDecoration(labelText: 'Car'),
-                value: _selectedCarId,
-                onChanged: (String? newValue) {
-                  setState(() {
-                    _selectedCarId = newValue;
-                  });
-                },
-                items: _cars.map<DropdownMenuItem<String>>((Car car) {
-                  return DropdownMenuItem<String>(
-                    value: car.id,
-                    child: Text(car.carPlate),
-                  );
-                }).toList(),
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                key: _formKey,
+                child: Stepper(
+                  currentStep: _currentStep,
+                  onStepContinue: _onStepContinue,
+                  onStepCancel: _onStepCancel,
+                  controlsBuilder:
+                      (BuildContext context, ControlsDetails controls) {
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        if (_currentStep != 0)
+                          ElevatedButton(
+                            onPressed: controls.onStepCancel,
+                            child: Text('Back'),
+                          ),
+                        ElevatedButton(
+                          onPressed: controls.onStepContinue,
+                          child:
+                              Text(_currentStep == 2 ? 'Finish' : 'Continue'),
+                        ),
+                      ],
+                    );
+                  },
+                  steps: [
+                    Step(
+                      title: Text('Car and Type'),
+                      content: Column(
+                        children: [
+                          DropdownButtonFormField<String>(
+                            decoration: InputDecoration(labelText: 'Car'),
+                            value: _selectedCarId,
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                _selectedCarId = newValue;
+                              });
+                            },
+                            items:
+                                _cars.map<DropdownMenuItem<String>>((Car car) {
+                              return DropdownMenuItem<String>(
+                                value: car.id,
+                                child: Text(car.carPlate),
+                              );
+                            }).toList(),
+                            validator: (value) =>
+                                value == null ? 'Please select a car' : null,
+                          ),
+                          DropdownButtonFormField<String>(
+                            decoration: InputDecoration(labelText: 'Type'),
+                            value: _expense.type,
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                _expense.type = newValue!;
+                              });
+                            },
+                            items: ['Tax', 'Service', 'Other']
+                                .map<DropdownMenuItem<String>>((String value) {
+                              return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(value),
+                              );
+                            }).toList(),
+                          ),
+                        ],
+                      ),
+                      isActive: _currentStep >= 0,
+                      state: _currentStep >= 0
+                          ? StepState.complete
+                          : StepState.disabled,
+                    ),
+                    Step(
+                      title: Text('Details'),
+                      content: _expense.type == 'Tax'
+                          ? _buildTaxFields()
+                          : _expense.type == 'Service'
+                              ? _buildServiceFields()
+                              : _buildOtherFields(),
+                      isActive: _currentStep >= 1,
+                      state: _currentStep >= 1
+                          ? StepState.complete
+                          : StepState.disabled,
+                    ),
+                    Step(
+                      title: Text('Confirm'),
+                      content: Column(
+                        children: [
+                          Text(
+                              'Please review the details and press Finish to save the expense.'),
+                        ],
+                      ),
+                      isActive: _currentStep >= 2,
+                      state: _currentStep >= 2
+                          ? StepState.complete
+                          : StepState.disabled,
+                    ),
+                  ],
+                ),
               ),
-              DropdownButtonFormField<String>(
-                decoration: InputDecoration(labelText: 'Type'),
-                value: _expense.type,
-                onChanged: (String? newValue) {
-                  setState(() {
-                    _expense.type = newValue!;
-                  });
-                },
-                items: ['Tax', 'Service', 'Other']
-                    .map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-              ),
-              if (_expense.type == 'Tax') _buildTaxFields(),
-              if (_expense.type == 'Service') _buildServiceFields(),
-              if (_expense.type == 'Other') _buildOtherFields(),
-              SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () async {
-                  if (_formKey.currentState!.validate()) {
-                    _formKey.currentState!.save();
-                    _expense.carId = _selectedCarId!;
-                    await ExpenseService().updateExpense(_expense);
-                    Navigator.pop(context);
-                  }
-                },
-                child: Text('Save'),
-              ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 
@@ -123,34 +248,41 @@ class _ExpenseEditScreenState extends State<ExpenseEditScreen> {
             );
           }).toList(),
         ),
-        TextFormField(
+        _buildTextField(
+          label: 'Tax Broker',
           initialValue: _expense.details['taxBroker'],
-          decoration: InputDecoration(labelText: 'Tax Broker'),
-          onSaved: (value) => _expense.details['taxBroker'] = value ?? '',
+          onChanged: (value) => _expense.details['taxBroker'] = value,
         ),
-        TextFormField(
+        _buildTextField(
+          label: 'Tax Cost',
           initialValue: _expense.details['cost'].toString(),
-          decoration: InputDecoration(labelText: 'Tax Cost'),
           keyboardType: TextInputType.number,
-          onSaved: (value) => _expense.cost = int.parse(value ?? '0'),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter a cost';
+            }
+            if (int.tryParse(value) == null) {
+              return 'Please enter a valid number';
+            }
+            return null;
+          },
+          onChanged: (value) => _expense.cost = int.parse(value ?? '0'),
         ),
-        TextFormField(
-          initialValue: _expense.details['taxValidFrom'],
-          decoration: InputDecoration(labelText: 'Valid From'),
-          keyboardType: TextInputType.datetime,
-          onSaved: (value) => _expense.details['taxValidFrom'] = value ?? '',
+        _buildDateField(
+          label: 'Valid From',
+          controller: _taxValidFromController,
+          dateKey: 'taxValidFrom',
         ),
-        TextFormField(
-          initialValue: _expense.details['taxValidTo'],
-          decoration: InputDecoration(labelText: 'Valid To'),
-          keyboardType: TextInputType.datetime,
-          onSaved: (value) => _expense.details['taxValidTo'] = value ?? '',
+        _buildDateField(
+          label: 'Valid To',
+          controller: _taxValidToController,
+          dateKey: 'taxValidTo',
         ),
-        TextFormField(
+        _buildTextField(
+          label: 'Notes',
           initialValue: _expense.details['taxNotes'],
-          decoration: InputDecoration(labelText: 'Notes'),
           maxLines: 3,
-          onSaved: (value) => _expense.details['taxNotes'] = value ?? '',
+          onChanged: (value) => _expense.details['taxNotes'] = value,
         ),
       ],
     );
@@ -167,54 +299,67 @@ class _ExpenseEditScreenState extends State<ExpenseEditScreen> {
               _expense.details['serviceType'] = newValue!;
             });
           },
-          items: ['Maintenance', 'Service', 'Tire Rotation', 'Manufacture Service', 'Crash', 'Other']
-              .map<DropdownMenuItem<String>>((String value) {
+          items: [
+            'Maintenance',
+            'Service',
+            'Tire Rotation',
+            'Manufacture Service',
+            'Crash',
+            'Other'
+          ].map<DropdownMenuItem<String>>((String value) {
             return DropdownMenuItem<String>(
               value: value,
               child: Text(value),
             );
           }).toList(),
         ),
-        TextFormField(
+        _buildTextField(
+          label: 'Service Name',
           initialValue: _expense.details['serviceName'],
-          decoration: InputDecoration(labelText: 'Service Name'),
-          onSaved: (value) => _expense.details['serviceName'] = value ?? '',
+          onChanged: (value) => _expense.details['serviceName'] = value,
         ),
-        TextFormField(
+        _buildTextField(
+          label: 'Service Contact',
           initialValue: _expense.details['serviceContact'],
-          decoration: InputDecoration(labelText: 'Service Contact'),
           keyboardType: TextInputType.phone,
-          onSaved: (value) => _expense.details['serviceContact'] = value ?? '',
+          onChanged: (value) => _expense.details['serviceContact'] = value,
         ),
-        TextFormField(
+        _buildTextField(
+          label: 'Service Cost',
           initialValue: _expense.details['cost'].toString(),
-          decoration: InputDecoration(labelText: 'Service Cost'),
           keyboardType: TextInputType.number,
-          onSaved: (value) => _expense.cost = int.parse(value ?? '0'),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter a cost';
+            }
+            if (int.tryParse(value) == null) {
+              return 'Please enter a valid number';
+            }
+            return null;
+          },
+          onChanged: (value) => _expense.cost = int.parse(value ?? '0'),
         ),
-        TextFormField(
+        _buildTextField(
+          label: 'Service Details',
           initialValue: _expense.details['serviceDetails'],
-          decoration: InputDecoration(labelText: 'Service Details'),
           maxLines: 3,
-          onSaved: (value) => _expense.details['serviceDetails'] = value ?? '',
+          onChanged: (value) => _expense.details['serviceDetails'] = value,
         ),
-        TextFormField(
+        _buildTextField(
+          label: 'Service Warranty (months)',
           initialValue: _expense.details['serviceWarranty'],
-          decoration: InputDecoration(labelText: 'Service Warranty (months)'),
           keyboardType: TextInputType.number,
-          onSaved: (value) => _expense.details['serviceWarranty'] = value ?? '0',
+          onChanged: (value) => _expense.details['serviceWarranty'] = value,
         ),
-        TextFormField(
-          initialValue: _expense.details['serviceDate'],
-          decoration: InputDecoration(labelText: 'Service Date'),
-          keyboardType: TextInputType.datetime,
-          onSaved: (value) => _expense.details['serviceDate'] = value ?? '',
+        _buildDateField(
+          label: 'Service Date',
+          controller: _serviceDateController,
+          dateKey: 'serviceDate',
         ),
-        TextFormField(
-          initialValue: _expense.details['serviceReminder'],
-          decoration: InputDecoration(labelText: 'Service Reminder'),
-          keyboardType: TextInputType.datetime,
-          onSaved: (value) => _expense.details['serviceReminder'] = value ?? '',
+        _buildDateField(
+          label: 'Service Reminder',
+          controller: _serviceReminderController,
+          dateKey: 'serviceReminder',
         ),
       ],
     );
@@ -223,37 +368,80 @@ class _ExpenseEditScreenState extends State<ExpenseEditScreen> {
   Widget _buildOtherFields() {
     return Column(
       children: [
-        TextFormField(
+        _buildTextField(
+          label: 'Other Name',
           initialValue: _expense.details['otherName'],
-          decoration: InputDecoration(labelText: 'Other Name'),
-          onSaved: (value) => _expense.details['otherName'] = value ?? '',
+          onChanged: (value) => _expense.details['otherName'] = value,
         ),
-        TextFormField(
-          initialValue: _expense.details['otherDate'],
-          decoration: InputDecoration(labelText: 'Other Date'),
-          keyboardType: TextInputType.datetime,
-          onSaved: (value) => _expense.details['otherDate'] = value ?? '',
+        _buildDateField(
+          label: 'Other Date',
+          controller: _otherDateController,
+          dateKey: 'otherDate',
         ),
-        TextFormField(
-          initialValue: _expense.details['otherReminder'],
-          decoration: InputDecoration(labelText: 'Other Reminder'),
-          keyboardType: TextInputType.datetime,
-          onSaved: (value) => _expense.details['otherReminder'] = value ?? '',
+        _buildDateField(
+          label: 'Other Reminder',
+          controller: _otherReminderController,
+          dateKey: 'otherReminder',
         ),
-        TextFormField(
+        _buildTextField(
+          label: 'Other Cost',
           initialValue: _expense.details['cost'].toString(),
-          decoration: InputDecoration(labelText: 'Other Cost'),
           keyboardType: TextInputType.number,
-          onSaved: (value) => _expense.cost = int.parse(value ?? '0'),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter a cost';
+            }
+            if (int.tryParse(value) == null) {
+              return 'Please enter a valid number';
+            }
+            return null;
+          },
+          onChanged: (value) => _expense.cost = int.parse(value ?? '0'),
         ),
-        TextFormField(
+        _buildTextField(
+          label: 'Other Details',
           initialValue: _expense.details['otherDetails'],
-          decoration: InputDecoration(labelText: 'Other Details'),
           maxLines: 3,
-          onSaved: (value) => _expense.details['otherDetails'] = value ?? '',
+          onChanged: (value) => _expense.details['otherDetails'] = value,
         ),
       ],
     );
   }
-}
 
+  Widget _buildTextField({
+    required String label,
+    required String? initialValue,
+    TextInputType keyboardType = TextInputType.text,
+    int maxLines = 1,
+    String? Function(String?)? validator,
+    void Function(String)? onChanged,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: TextFormField(
+        decoration: InputDecoration(labelText: label),
+        initialValue: initialValue,
+        keyboardType: keyboardType,
+        maxLines: maxLines,
+        validator: validator,
+        onChanged: onChanged,
+      ),
+    );
+  }
+
+  Widget _buildDateField({
+    required String label,
+    required TextEditingController controller,
+    required String dateKey,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: TextFormField(
+        decoration: InputDecoration(labelText: label),
+        readOnly: true,
+        onTap: () => _selectDate(context, controller, dateKey),
+        controller: controller,
+      ),
+    );
+  }
+}
