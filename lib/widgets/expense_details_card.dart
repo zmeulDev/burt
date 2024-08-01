@@ -1,4 +1,5 @@
 import 'package:burt/expense_screens/expense_edit_screen.dart';
+import 'package:burt/home_screen.dart';
 import 'package:burt/models/car_model.dart';
 import 'package:burt/models/expense_model.dart';
 import 'package:burt/services/expense_service.dart';
@@ -52,24 +53,12 @@ class ExpenseDetailsCard extends StatelessWidget {
                 ),
               ),
               CircleAvatar(
-                backgroundColor: Colors.black,
-                child: IconButton(
-                  icon: Icon(Icons.edit, color: Colors.white),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            ExpenseEditScreen(expenseId: expense.id),
-                      ),
-                    );
-                  },
-                ),
+                backgroundColor: _getColorForExpenseType(context, expense.type),
               ),
             ],
           ),
           SizedBox(height: 20),
-          Divider(color: Colors.grey.shade300),
+          Divider(color: Theme.of(context).colorScheme.outline),
           SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -113,7 +102,7 @@ class ExpenseDetailsCard extends StatelessWidget {
             ],
           ),
           SizedBox(height: 20),
-          Divider(color: Colors.grey.shade300),
+          Divider(color: Theme.of(context).colorScheme.outline),
           SizedBox(height: 10),
           if (expense.details.isNotEmpty)
             ...expense.details.entries.map((entry) {
@@ -142,7 +131,7 @@ class ExpenseDetailsCard extends StatelessWidget {
                 ),
               );
             }).toList(),
-          Divider(color: Colors.grey.shade300),
+          Divider(color: Theme.of(context).colorScheme.outline),
           SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -163,12 +152,18 @@ class ExpenseDetailsCard extends StatelessWidget {
               ElevatedButton.icon(
                 onPressed: () async {
                   await ExpenseService().deleteExpense(expense.id);
-                  Navigator.pop(context);
+                  if (context.mounted) {
+                    Navigator.of(context).push(
+                        MaterialPageRoute(builder: (context) => HomeScreen()));
+                  }
                 },
-                icon: Icon(Icons.delete),
+                icon: Icon(
+                  Icons.delete,
+                  color: Theme.of(context).colorScheme.onErrorContainer,
+                ),
                 label: Text('Delete'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
+                  backgroundColor: Theme.of(context).colorScheme.errorContainer,
                 ),
               ),
             ],
@@ -189,5 +184,18 @@ extension StringExtension on String {
   String capitalize() {
     if (this.isEmpty) return this;
     return "${this[0].toUpperCase()}${this.substring(1)}";
+  }
+}
+
+Color _getColorForExpenseType(BuildContext context, String type) {
+  switch (type) {
+    case 'Tax':
+      return Theme.of(context).colorScheme.errorContainer;
+    case 'Service':
+      return Theme.of(context).colorScheme.primaryContainer;
+    case 'Other':
+      return Theme.of(context).colorScheme.tertiaryContainer;
+    default:
+      return Theme.of(context).colorScheme.primaryContainer;
   }
 }

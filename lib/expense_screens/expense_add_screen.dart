@@ -321,9 +321,9 @@ class _ExpenseAddScreenState extends State<ExpenseAddScreen> {
           },
           items: [
             'Maintenance',
+            'Inspection',
             'Service',
             'Tire Rotation',
-            'Manufacture Service',
             'Crash',
             'Other'
           ].map<DropdownMenuItem<String>>((String value) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:intl/intl.dart';
 
 class CarsViewCard extends StatelessWidget {
   final String model;
@@ -7,6 +8,7 @@ class CarsViewCard extends StatelessWidget {
   final bool status;
   final String carId;
   final Function(String) onCarSelected;
+  final Map<String, String>? upcomingTax;
 
   CarsViewCard({
     required this.model,
@@ -14,6 +16,7 @@ class CarsViewCard extends StatelessWidget {
     required this.status,
     required this.carId,
     required this.onCarSelected,
+    this.upcomingTax,
   });
 
   @override
@@ -43,7 +46,7 @@ class CarsViewCard extends StatelessWidget {
                   child: Text(
                     status ? 'ACTIVE' : 'INACTIVE',
                     style: TextStyle(
-                      color: status ? Colors.white : Colors.white,
+                      color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -73,9 +76,12 @@ class CarsViewCard extends StatelessWidget {
                   backgroundColor: Colors.white,
                   radius: 20,
                   child: Icon(
-                    status ? Iconsax.car_copy : Iconsax.chart_fail_copy,
-                    color: status ? Colors.green : Colors.red,
-                    size: 24,
+                    status ? Iconsax.car_copy : Iconsax.car_copy,
+                    color: DateTime.now().isBefore(DateFormat("yyyy-MM-dd")
+                            .parse(upcomingTax!['taxValidTo'].toString()))
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).colorScheme.error,
+                    size: 36,
                   ),
                 ),
                 SizedBox(width: 10),
@@ -83,16 +89,21 @@ class CarsViewCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Status:',
+                      'Upcoming Tax:',
                       style: TextStyle(
                         color: Colors.black,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     Text(
-                      status ? 'Active' : 'Inactive',
+                      upcomingTax != null
+                          ? '${upcomingTax!['taxType']}: ${upcomingTax!['taxValidTo'] == '1985-05-20' ? 'N/A' : upcomingTax!['taxValidTo']}'
+                          : 'N/A',
                       style: TextStyle(
-                        color: status ? Colors.green : Colors.red,
+                        color: DateTime.now().isBefore(DateFormat("yyyy-MM-dd")
+                                .parse(upcomingTax!['taxValidTo'].toString()))
+                            ? Theme.of(context).colorScheme.primary
+                            : Theme.of(context).colorScheme.error,
                       ),
                     ),
                   ],

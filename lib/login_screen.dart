@@ -55,12 +55,11 @@ class _LoginScreenState extends State<LoginScreen> {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  SizedBox(height: 100),
+                  SizedBox(height: 80),
                   Image.asset(
                     'assets/illustrations/hello.png',
-                    height: 300,
+                    height: 250,
                   ),
-                  SizedBox(height: 16),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
