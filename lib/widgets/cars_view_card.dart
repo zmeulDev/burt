@@ -28,9 +28,12 @@ class CarsViewCard extends StatelessWidget {
         padding: EdgeInsets.all(15),
         margin: EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: status
+              ? Theme.of(context).colorScheme.primaryContainer
+              : Theme.of(context).colorScheme.errorContainer,
           borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: Colors.grey.shade200),
+          border: Border.all(
+              color: Theme.of(context).colorScheme.surfaceContainerLowest),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -40,14 +43,17 @@ class CarsViewCard extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
-                    color: status ? Colors.teal : Colors.red,
+                    color: status
+                        ? Theme.of(context).colorScheme.surfaceContainer
+                        : Theme.of(context).colorScheme.error,
                     borderRadius: BorderRadius.circular(15),
                   ),
                   child: Text(
                     status ? 'ACTIVE' : 'INACTIVE',
                     style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+                      color: status
+                          ? Theme.of(context).colorScheme.onSurface
+                          : Theme.of(context).colorScheme.onError,
                     ),
                   ),
                 ),
@@ -55,7 +61,7 @@ class CarsViewCard extends StatelessWidget {
                 Text(
                   '$model',
                   style: TextStyle(
-                    color: Colors.grey,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
               ],
@@ -64,8 +70,7 @@ class CarsViewCard extends StatelessWidget {
             Text(
               '$carPlate',
               style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 22,
               ),
             ),
@@ -73,15 +78,15 @@ class CarsViewCard extends StatelessWidget {
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: Colors.white,
-                  radius: 20,
+                  backgroundColor: Theme.of(context).colorScheme.surface,
+                  radius: 24,
                   child: Icon(
                     status ? Iconsax.car_copy : Iconsax.car_copy,
                     color: DateTime.now().isBefore(DateFormat("yyyy-MM-dd")
                             .parse(upcomingTax!['taxValidTo'].toString()))
                         ? Theme.of(context).colorScheme.primary
                         : Theme.of(context).colorScheme.error,
-                    size: 36,
+                    size: 32,
                   ),
                 ),
                 SizedBox(width: 10),
@@ -91,8 +96,7 @@ class CarsViewCard extends StatelessWidget {
                     Text(
                       'Upcoming Tax:',
                       style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
                       ),
                     ),
                     Text(
@@ -102,7 +106,7 @@ class CarsViewCard extends StatelessWidget {
                       style: TextStyle(
                         color: DateTime.now().isBefore(DateFormat("yyyy-MM-dd")
                                 .parse(upcomingTax!['taxValidTo'].toString()))
-                            ? Theme.of(context).colorScheme.primary
+                            ? Theme.of(context).colorScheme.onPrimaryContainer
                             : Theme.of(context).colorScheme.error,
                       ),
                     ),
@@ -111,12 +115,12 @@ class CarsViewCard extends StatelessWidget {
                 Spacer(),
                 Container(
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
+                    color: Theme.of(context).colorScheme.inverseSurface,
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(
                     icon: Icon(Icons.arrow_forward,
-                        color: Theme.of(context).colorScheme.onPrimary),
+                        color: Theme.of(context).colorScheme.onInverseSurface),
                     onPressed: () => onCarSelected(carId),
                   ),
                 ),
