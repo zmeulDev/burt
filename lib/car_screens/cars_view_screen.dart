@@ -29,7 +29,7 @@ class CarsViewScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: Icon(Iconsax.add_square_copy),
-            color: Theme.of(context).colorScheme.onPrimary,
+            color: Theme.of(context).colorScheme.onSurface,
             onPressed: onAddCar,
             tooltip: 'Add Car',
           ),
